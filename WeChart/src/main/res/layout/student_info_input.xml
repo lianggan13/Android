@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/et_student_name"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:background="@null"
+        android:textSize="30sp"
+        android:hint="请输入姓名"
+        android:textColorHint="#22222222"/>
+
+    <EditText
+        android:id="@+id/et_student_code"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:background="@null"
+        android:textSize="30sp"
+        android:hint="请输入学号"
+        android:textColorHint="#22222222"/>
+
+    <EditText
+        android:id="@+id/et_student_class"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:background="@null"
+        android:textSize="30sp"
+        android:hint="请输入班级"
+        android:textColorHint="#22222222"/>
+
+    <EditText
+        android:id="@+id/et_student_username"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:background="@null"
+        android:textSize="30sp"
+        android:hint="请输入用户名"
+        android:textColorHint="#22222222"/>
+
+    <EditText
+        android:id="@+id/et_student_password"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:background="@null"
+        android:textSize="30sp"
+        android:inputType="textPassword"
+        android:hint="请输入密码"
+        android:textColorHint="#22222222"/>
+
+</LinearLayout>
