@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.LoginActivity">
+
+    <TextView
+        android:id="@+id/login_title"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:gravity="center"
+        android:text="登录"
+        android:textSize="50sp"
+        android:textStyle="bold|italic" />
+
+    <EditText
+        android:id="@+id/et_student_username"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_above="@id/et_student_password"
+        android:background="@null"
+        android:gravity="center_vertical"
+        android:hint="姓名/学号/用户名"
+        android:paddingLeft="10dp"
+        android:textColorHint="#22222222"
+        android:textSize="30sp" />
+
+    <EditText
+        android:id="@+id/et_student_password"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_centerInParent="true"
+        android:background="@null"
+        android:gravity="center_vertical"
+        android:hint="密码"
+        android:inputType="textPassword"
+        android:paddingLeft="10dp"
+        android:textColorHint="#22222222"
+        android:textSize="30sp" />
+
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:layout_above="@id/register_button"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="5dp"
+        android:text="登录"
+        android:textSize="28sp" />
+
+    <Button
+        android:id="@+id/register_button"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="25dp"
+        android:text="注册"
+        android:textSize="28sp" />
+</RelativeLayout>
