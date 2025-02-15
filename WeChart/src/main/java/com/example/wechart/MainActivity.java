@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initFragment();
         changeFragment(mFriendsFragment);
         mFragmentManager.beginTransaction()
-                .add(R.id.fragment_content, mFriendsFragment).commitAllowingStateLoss();
+                .add(R.id.fragment_content, mFriendsFragment).addToBackStack(null).commitAllowingStateLoss();
         mCurrentFragment = mFriendsFragment;
         mIvFriends.setSelected(true);
 
@@ -149,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mFragmentManager.beginTransaction()
                         .hide(mCurrentFragment) // 隐藏当前 Fragment
                         .add(R.id.fragment_content, to) // 添加目标 Fragment
+                        .addToBackStack(null)
                         .commitAllowingStateLoss(); // 提交事务
             } else {
                 // 如果目标 Fragment 已存在，显示它
