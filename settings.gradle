@@ -21,3 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Android"
 include ':WeChart'
+include ':test'
+include ':PLCT'
+include ':UserView'

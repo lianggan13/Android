@@ -3,6 +3,7 @@ package com.example.wechart.utility;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
@@ -72,6 +73,7 @@ public class JsonHelper {
 
     class Person {
         public String name;
+        @SerializedName("age")
         public int age;
         public boolean isStudent;
 
