@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Android">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".PaintBasis.Summarize_1_1_1_Activity" />
+        <activity android:name=".PaintBasis.Summarize_1_1_3_Activity" />
+        <activity android:name=".PaintBasis.RectPontView_1_1_4_Activity" />
+        <activity android:name=".PaintBasis.intersect_1_1_4_Activity" />
+        <activity android:name=".PaintBasis.PathView_1_2_Activity" />
+        <activity android:name=".PaintBasis.SpiderActivity" />
+
+        <activity android:name=".CanvasOperation.CircleOperationActivity" />
+        <activity android:name=".CanvasOperation.CustomCircleActivity" />
+        <activity android:name=".CanvasOperation.ClipRgnActivity" />
+        <activity android:name=".CanvasOperation.CustomViewActivity" />
+
+        <activity android:name=".Animation.CameraStretchDemo" />
+        <activity android:name=".Animation.LoadingDemo" />
+        <activity android:name=".Animation.ScannerDemo" />
+        <activity android:name=".Animation.FrameAnimXMLActivity" />
+        <activity android:name=".Animation.LoadingDemoActivity" />
+        <activity android:name=".Animation.CharacterEvaluatorActivity" />
+        <activity android:name=".Animation.FallingBallActivity" />
+        <activity android:name=".Animation.PathMenuActivity" />
+        <activity android:name=".Animation.RingBellActivity" />
+        <activity android:name=".Animation.AnimateLayoutChangesActivity" />
+        <activity android:name=".Animation.AlipayActivity" />
+        <activity android:name=".Animation.GetPosTanActivity" />
+        <activity android:name=".Draw.BezierGestureTrackActivity" />
+        <activity android:name=".Draw.AnimWaveActivity" />
+        <activity android:name=".Layout.FlowLayoutActivity" />
+    </application>
+
+</manifest>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/main"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/summarize_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.1.1 概述" />
+
+        <Button
+            android:id="@+id/canvas_basis_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.1.3 Canvas使用基础" />
+
+        <Button
+            android:id="@+id/rect_point_view_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.1.4.1 包含某个点" />
+
+        <Button
+            android:id="@+id/intersect_view_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.1.4.2 判断两个矩形是否相交" />
+
+        <Button
+            android:id="@+id/path_view_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.2 Path概述" />
+
+        <Button
+            android:id="@+id/canvas_operation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.5.1 Canvas变换" />
+
+        <Button
+            android:id="@+id/canvas_circle_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.5.3.1 示例一：圆形头像" />
+
+        <Button
+            android:id="@+id/clip_rgn_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.5.3.1 示例二：裁剪动画" />
+
+        <Button
+            android:id="@+id/custom_view_xml"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.6.2 XML中添加控件" />
+
+        <Button
+            android:id="@+id/spider_view_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.2.6 示例：蜘蛛网状图" />
+
+        <Button
+            android:id="@+id/camera_stretch_activity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="镜头由远至近效果" />
+
+        <Button
+            android:id="@+id/loading_demo_activity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="加载框效果" />
+
+        <Button
+            android:id="@+id/scanner_demo_activity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="扫描效果" />
+
+        <Button
+            android:id="@+id/xml_create"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="XML实现" />
+
+        <Button
+            android:id="@+id/loading_demo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="3.1.4 示例" />
+
+        <Button
+            android:id="@+id/character_evaluator"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="3.3.1 CharacterEvaluator" />
+
+        <Button
+            android:id="@+id/falling_ball"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="3.4.3 FallingBall" />
+
+        <Button
+            android:id="@+id/path_menu_activity"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="路径菜单" />
+
+        <Button
+            android:id="@+id/ring_bell_activity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="响铃效果" />
+
+        <Button
+            android:id="@+id/animateLayoutChangesActivity"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="animateLayoutChanges属性" />
+
+        <Button
+            android:id="@+id/alipay_demo"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="支付宝支付动画" />
+
+        <Button
+            android:id="@+id/getpostan_demo"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="GetPosTanDemo" />
+
+
+        <Button
+            android:id="@+id/bezier_gesture_track"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="通过贝赛尔实现手势追踪" />
+
+        <Button
+            android:id="@+id/anim_wave_demo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="波浪动画" />
+
+        <Button
+            android:id="@+id/flowlayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="流式布局" />
+    </LinearLayout>
+</ScrollView>

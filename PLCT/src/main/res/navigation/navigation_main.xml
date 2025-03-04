@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation_main"
+    app:startDestination="@id/webUriFragment">
+
+    <fragment
+        android:id="@+id/webUriFragment"
+        android:name="com.yunda.safe.plct.ui.weburi.WebUriFragment"
+        android:label="fragment_web_uri"
+        tools:layout="@layout/fragment_web_uri">
+        <action
+            android:id="@+id/action_webUri_to_webPage"
+            app:destination="@id/webPageFragment"
+            app:popUpTo="@id/webUriFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/webPageFragment"
+        android:name="com.yunda.safe.plct.ui.webpage.WebPageFragment"
+        android:label="fragment_web_page"
+        tools:layout="@layout/fragment_web_page">
+        <!--        <argument-->
+        <!--            android:name="mUri"-->
+        <!--            app:argType="android.net.Uri" />-->
+    </fragment>
+</navigation>
