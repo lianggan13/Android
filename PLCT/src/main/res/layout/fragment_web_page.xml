@@ -9,26 +9,35 @@
     <!--    android:theme="@style/Theme.Android.DarkActionBar.NoActionBar"-->
 
     <LinearLayout
-        android:id="@+id/linear_weburi"
+        android:id="@+id/linearSearch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!--        <AutoCompleteTextView-->
-        <!--            android:id="@+id/searchBox"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:completionThreshold="1"-->
-        <!--            android:hint="http://+" />-->
+        <AutoCompleteTextView
+            android:id="@+id/searchBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="http://+"
+            android:completionThreshold="1" />
 
-        <!--        <androidx.recyclerview.widget.RecyclerView-->
-        <!--            android:id="@+id/historyRecyclerView"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:visibility="gone" />-->
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:visibility="gone"
+            android:src="@mipmap/search" />
+
+        <Button
+            android:id="@+id/btnSearch"
+            android:background="@drawable/ic_search"
+            android:layout_width="30dp"
+            android:layout_height="30dp" />
     </LinearLayout>
 
     <ProgressBar
@@ -38,7 +47,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linear_weburi" />
+        app:layout_constraintTop_toBottomOf="@+id/linearSearch" />
 
     <WebView
         android:id="@+id/webView"

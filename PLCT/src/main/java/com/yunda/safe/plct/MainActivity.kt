@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
     private val navController
         get() = Navigation.findNavController(
             this,
-            R.id.nav_host_fragment_gallery
+            R.id.nav_host_fragment
         )
 
     override fun onCreate(savedInstanceState: Bundle?) {

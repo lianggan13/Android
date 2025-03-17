@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    kotlin("kapt") // 添加这一行
+    kotlin("kapt")
 }
 
 android {
@@ -19,6 +19,10 @@ android {
     }
 
     buildTypes {
+//        debug {
+//            buildConfigField "String"; "API_URL"; '"https://debug.example.com/api"'
+//        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -35,7 +39,9 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        dataBinding = true
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -55,6 +61,9 @@ dependencies {
     implementation(libs.room.common)
     implementation(libs.room.ktx)
     implementation(libs.recyclerview)
+    implementation(libs.preference)
+    implementation(libs.work.runtime.ktx)
+//    implementation(libs.flycotablayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
