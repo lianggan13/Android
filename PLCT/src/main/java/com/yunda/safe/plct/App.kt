@@ -5,8 +5,15 @@ import android.app.Application
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.yunda.safe.plct.database.AppRepository
 import com.yunda.safe.plct.utility.AppPreferences
+import com.yunda.safe.plct.work.PollWorker
+import java.util.concurrent.TimeUnit
 
 class App : Application() {
     override fun onCreate() {
@@ -17,11 +24,29 @@ class App : Application() {
 
         AppPreferences.init(this@App)
         AppRepository.initialize(this@App)
+
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED) // CONNECTED:任何已连接的网络
+            .build()
+
+        val workRequest = PeriodicWorkRequestBuilder<PollWorker>(15, TimeUnit.MINUTES) // 每15分钟执行一次
+            .setConstraints(constraints)
+            .build()
+
+        // 将工作排队
+        WorkManager.getInstance(this@App).enqueueUniquePeriodicWork(
+            com.yunda.safe.plct.work.TAG,
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
     }
+
 
     override fun onTerminate() {
         super.onTerminate()
         AppRepository.get().close()
+
+        WorkManager.getInstance(this@App).cancelAllWork()
     }
 
     inner class GlobalExceptionHandler(private val context: Context) :

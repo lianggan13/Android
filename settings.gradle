@@ -1,3 +1,6 @@
+// pluginManagement 脚本块中的 repositories 配置 , 对应之前的 buildscript 中的 repositories 配置 ;
+// dependencyResolutionManagement 脚本块中的 repositories 配置 , 对应之前的 allprojects 中的 repositories 配置
+
 pluginManagement {
     repositories {
         google {
@@ -8,6 +11,7 @@ pluginManagement {
             }
         }
         mavenCentral()
+        maven { url 'https://mvnrepository.com/' }
         gradlePluginPortal()
     }
 }
@@ -16,11 +20,28 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://mvnrepository.com") }
+        maven { url = uri("https://jcenter.bintray.com") }
+        maven { url = uri("https://mvnrepository.com/artifact") }
+//        jcenter()
+//        maven()
+//        maven { url 'https://mvnrepository.com/' }
+//        maven { url 'https://jitpack.io' }
     }
 }
+
 
 rootProject.name = "Android"
 include ':WeChart'
 include ':test'
 include ':PLCT'
 include ':UserView'
+include ':VideoNews'
+include ':Foundation_BottomNavigation'
+include ':Foundation_Login'
+include ':Foundation_Responsive'
+include ':Foundation_Settings'
+include ':Foundation_Scrolling'
+include ':Foundation_Tabbed'
+include ':Foundation_NavigationDrawer'

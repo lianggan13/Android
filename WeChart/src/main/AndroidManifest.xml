@@ -4,6 +4,7 @@
     <!-- android:theme="@style/Theme.AppCompat.NoActionBar" -->
     <!-- android:theme="@style/Theme.WeChart" -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
         android:allowBackup="true"
@@ -16,6 +17,7 @@
         android:theme="@style/Theme.WeChart"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
         <activity
             android:name=".view.RegisterActivity"
             android:exported="false" />
@@ -57,10 +59,12 @@
         <activity
             android:name=".database.SqliteActivity"
             android:exported="true" />
-
+        <activity
+            android:name=".contact.ContactActivity"
+            android:exported="true" />
         <activity
             android:name=".view.LoginActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -71,11 +75,11 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
+            <!--            <intent-filter>-->
+            <!--                <action android:name="android.intent.action.MAIN" />-->
 
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
+            <!--                <category android:name="android.intent.category.LAUNCHER" />-->
+            <!--            </intent-filter>-->
         </activity>
     </application>
 
