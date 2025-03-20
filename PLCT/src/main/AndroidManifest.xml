@@ -12,11 +12,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Android.DarkActionBar.NoActionBar"
         android:usesCleartextTraffic="true">
-        <!--        <activity-->
-        <!--            android:name=".MainActivity2"-->
-        <!--            android:exported="true"-->
-        <!--            android:label="@string/title_activity_main2"-->
-        <!--            android:theme="@style/Theme.Android.DarkActionBar.NoActionBar" />-->
+        <activity
+            android:name=".jsbridge.JsWebActivity"
+            android:exported="true" />
+        <!-- <activity -->
+        <!-- android:name=".MainActivity2" -->
+        <!-- android:exported="true" -->
+        <!-- android:label="@string/title_activity_main2" -->
+        <!-- android:theme="@style/Theme.Android.DarkActionBar.NoActionBar" /> -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

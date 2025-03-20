@@ -31,6 +31,7 @@ annotation = "1.9.1"
 preference = "1.2.1"
 swiperefreshlayout = "1.0.0"
 workRuntimeKtx = "2.10.0"
+xlog = "1.11.1"
 
 [libraries]
 flycotablayout = { module = "io.github.h07000223:flycoTabLayout", version.ref = "flycotablayout" }
@@ -70,6 +71,7 @@ annotation = { group = "androidx.annotation", name = "annotation", version.ref =
 preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
+xlog = { module = "com.elvishew:xlog", version.ref = "xlog" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

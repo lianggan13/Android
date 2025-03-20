@@ -1,10 +1,6 @@
 package com.yunda.safe.plct.ui.webpage
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
@@ -37,18 +33,22 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.elvishew.xlog.XLog
 import com.yunda.safe.plct.R
 import com.yunda.safe.plct.adapter.WebUriAdapter
 import com.yunda.safe.plct.common.StringConstants
 import com.yunda.safe.plct.database.entity.WebUri
 import com.yunda.safe.plct.databinding.FragmentWebPageBinding
+import com.yunda.safe.plct.receiver.RefreshReceiver
+import com.yunda.safe.plct.service.AlarmService
+import com.yunda.safe.plct.utility.DateTime
 import com.yunda.safe.plct.utility.Keyboard
-import com.yunda.safe.plct.work.PollWorker.Companion.ACTION_REFRESH_WEBVIEW
+
+const val TAG = "WebPageFragment"
 
 class WebPageFragment : Fragment() {
 
     companion object {
-        const val TAG = "WebPageFragment"
         fun newInstance(uri: Uri): WebPageFragment {
             return WebPageFragment().apply {
                 arguments = Bundle().apply {
@@ -58,32 +58,39 @@ class WebPageFragment : Fragment() {
         }
     }
 
-    private var _binding: FragmentWebPageBinding? = null;
+    private var _binding: FragmentWebPageBinding? = null
 
     private lateinit var searchBox: AutoCompleteTextView
     private lateinit var recyclerView: RecyclerView
+    private lateinit var webUriAdapter: WebUriAdapter
     private lateinit var popupWindow: PopupWindow
-    private lateinit var mWebView: WebView
+    private lateinit var webView: WebView // BridgeWebView//WebView
 
     private val viewModel: WebPageViewModel by viewModels()
 
     private val binding get() = _binding!!
 
     private val mLifecycleObserver = object : DefaultLifecycleObserver {
+
         override fun onStart(owner: LifecycleOwner) {
             super.onStart(owner)
 
-            ContextCompat.registerReceiver(
-                requireActivity(),
-                refreshReceiver,
-                IntentFilter(ACTION_REFRESH_WEBVIEW),
-                ContextCompat.RECEIVER_NOT_EXPORTED
-            )
+            RefreshReceiver.register(requireActivity()) { context, intent ->
+                requireActivity().runOnUiThread {
+                    XLog.i(TAG, "F5")
+                    webView.reload()
+                }
+            }
+
+            AlarmService.setAlarm(requireContext(), DateTime.parseTime("14:40:30"))
         }
 
         override fun onStop(owner: LifecycleOwner) {
             super.onStop(owner)
-            requireActivity().unregisterReceiver(refreshReceiver)
+
+            RefreshReceiver.unRegister(requireActivity())
+
+            AlarmService.cancelAlarm(requireContext())
         }
     }
 
@@ -113,6 +120,29 @@ class WebPageFragment : Fragment() {
         _binding = FragmentWebPageBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        initSearchView()
+
+        initWebView()
+
+        return root
+    }
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.uri.observe(viewLifecycleOwner) {
+            webView.loadUrl(viewModel.uri.value.toString())
+        }
+
+        viewModel.mWebUrisLiveData.observe(viewLifecycleOwner) { webUris ->
+            webUris?.let {
+                updateUI(it, searchBox.text.toString())
+            }
+        }
+    }
+
+    private fun initSearchView() {
         searchBox = binding.searchBox
         searchBox.setText(viewModel.uri.value)
         searchBox.addTextChangedListener(object : TextWatcher {
@@ -142,45 +172,36 @@ class WebPageFragment : Fragment() {
         recyclerView = RecyclerView(requireContext()).apply {
             setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
         }
+        recyclerView.layoutManager = LinearLayoutManager(requireContext()).apply {
+            orientation = LinearLayoutManager.VERTICAL
+        }
+        webUriAdapter = WebUriAdapter().apply {
+            setOnItemClickListener { selectedItem ->
+                searchBox.setText(selectedItem)
+                recyclerView.visibility = View.GONE
+                popupWindow.dismiss()
+            }
+            setOnItemChildClickListener { itemToRemove ->
+                val webUri = viewModel.GetWebUri(itemToRemove)
+                if (webUri != null)
+                    viewModel.deleteWebUri(webUri)
+            }
+        }
+        recyclerView.adapter = webUriAdapter
 
         popupWindow =
             PopupWindow(recyclerView, ViewGroup.LayoutParams.MATCH_PARENT, 400, true).apply {
                 isFocusable = false
                 isOutsideTouchable = true
             }
-
-        initWebView()
-
-        return root
-    }
-
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        viewModel.uri.observe(viewLifecycleOwner) {
-            mWebView.loadUrl(viewModel.uri.value.toString())
-        }
-
-        viewModel.mWebUrisLiveData.observe(viewLifecycleOwner) { webUris ->
-            webUris?.let {
-                updateUI(it, searchBox.text.toString())
-            }
-        }
-    }
-
-    private val refreshReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            mWebView.reload()
-        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebView() {
         val progressBar = binding.progressHorizontal
-        mWebView = binding.webView
-        mWebView.settings.javaScriptEnabled = true
-        mWebView.webViewClient = object : WebViewClient() {
+        webView = binding.webView
+        webView.settings.javaScriptEnabled = true
+        webView.webViewClient = object : WebViewClient() {
             @SuppressLint("WebViewClientOnReceivedSslError")
             override fun onReceivedSslError(
                 view: WebView?,
@@ -210,7 +231,7 @@ class WebPageFragment : Fragment() {
             }
 
         }
-        mWebView.webChromeClient = object : WebChromeClient() {
+        webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
                 if (newProgress == 100) {
@@ -233,28 +254,6 @@ class WebPageFragment : Fragment() {
         }
     }
 
-    private fun setupHistoryAdapter(historyList: MutableList<String>) {
-        // 设置适配器
-        val webUriAdapter = WebUriAdapter(historyList,
-            // 处理点击事件
-            { selectedItem ->
-                searchBox.setText(selectedItem)
-                recyclerView.visibility = View.GONE
-                popupWindow.dismiss()
-            },
-            // 移除历史记录
-            { itemToRemove ->
-                val webUri = viewModel.GetWebUri(itemToRemove)
-                if (webUri != null)
-                    viewModel.deleteWebUri(webUri)
-            }
-        )
-
-        if (recyclerView.layoutManager == null)
-            recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = webUriAdapter
-    }
-
     private fun commitUri() {
         val uri = searchBox.text.toString()
 
@@ -274,7 +273,7 @@ class WebPageFragment : Fragment() {
         var uris = webUris.map { it.uri }
         val filteredList = uris.filter { it.contains(query, ignoreCase = true) }
 
-        setupHistoryAdapter(filteredList.toMutableList())
+        webUriAdapter.setDatas(filteredList.toMutableList())
 
         if (binding.linearSearch.visibility == View.VISIBLE && filteredList.isNotEmpty()) {
             if (!popupWindow.isShowing) {

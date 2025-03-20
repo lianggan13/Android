@@ -300,12 +300,6 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
     private void getVideoListLocal(final boolean isRefresh) {
         // 分页 + 弹性刷新
         try {
-            if (isRefresh) {
-                refreshLayout.finishRefresh(true);
-            } else {
-                refreshLayout.finishLoadMore(true);
-            }
-
             var videolist = MysqlSeed.loadLocalVideos();
             if (videolist != null && (long) videolist.size() > 0) {
                 List<VideoEntity> list = MysqlSeed.paginateVideos(videolist, pageNum, ApiConfig.PAGE_SIZE, categoryId);
@@ -326,6 +320,7 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
             }
         } catch (Exception e) {
             Log.e("VideoFragment", e.getMessage(), e);
+        } finally {
             if (isRefresh) {
                 refreshLayout.finishRefresh(true);
             } else {

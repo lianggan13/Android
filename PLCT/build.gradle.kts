@@ -10,7 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "com.yunda.safe.plct"
-        minSdk = 24
+//        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -68,4 +69,9 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     kapt(libs.room.compiler)
+
+    // https://github.com/elvishew/xLog
+    implementation(libs.xlog)
+    implementation("com.elvishew:xlog-libcat:1.0.0")
+    implementation("com.google.code.gson:gson:2.11.0")
 }
