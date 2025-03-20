@@ -3,7 +3,7 @@ package com.yunda.safe.plct.utility
 import android.content.Context
 import android.content.SharedPreferences
 
-object AppPreferences {
+object Preferences {
 
     private lateinit var sharedPreferences: SharedPreferences
 

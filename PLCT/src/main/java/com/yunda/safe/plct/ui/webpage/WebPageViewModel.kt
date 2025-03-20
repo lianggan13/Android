@@ -6,21 +6,21 @@ import androidx.lifecycle.ViewModel
 import com.yunda.safe.plct.common.StringConstants
 import com.yunda.safe.plct.database.AppRepository
 import com.yunda.safe.plct.database.entity.WebUri
-import com.yunda.safe.plct.utility.AppPreferences
+import com.yunda.safe.plct.utility.Preferences
 
 class WebPageViewModel : ViewModel() {
     private val appRepository = AppRepository.get()
     val mWebUrisLiveData = appRepository.getWebUris()
 
     private val _uri = MutableLiveData<String>().apply {
-        value = AppPreferences.getString(StringConstants.WEB_URI, "http://")
+        value = Preferences.getString(StringConstants.WEB_URI, "http://")
     }
     val uri: LiveData<String> = _uri
 
     fun setUri(newUri: String) {
         if (_uri.value != newUri) {
             _uri.value = newUri
-            AppPreferences.saveString(StringConstants.WEB_URI, newUri)
+            Preferences.saveString(StringConstants.WEB_URI, newUri)
         }
     }
 
@@ -36,4 +36,9 @@ class WebPageViewModel : ViewModel() {
         val webUri = mWebUrisLiveData.value?.firstOrNull() { it.uri == itemToRemove }
         return webUri
     }
+
+    override fun onCleared() {
+        super.onCleared()
+    }
+
 }
