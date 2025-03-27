@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.scwang.smart.refresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/refreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
     android:orientation="vertical"
+    app:srlPrimaryColor="#444444"
+    app:srlAccentColor="@android:color/white"
+    app:srlEnablePreviewInEditMode="true"
     tools:context=".fragment.VideoFragment">
+    <!--srlAccentColor srlPrimaryColor 将会改变 Header 和 Footer 的主题颜色-->
+    <!--srlEnablePreviewInEditMode 可以开启和关闭预览功能-->
+    <com.scwang.smart.refresh.header.ClassicsHeader
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srlClassicsSpinnerStyle="FixedBehind" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <com.scwang.smart.refresh.footer.ClassicsFooter
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srlClassicsSpinnerStyle="FixedBehind" />
 </com.scwang.smart.refresh.layout.SmartRefreshLayout>

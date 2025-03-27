@@ -1,4 +1,4 @@
-package com.yunda.safe.plct.jsbridge;
+package com.example.wechart.jsbridge;
 
 /**
  * Created on 2019/7/10.

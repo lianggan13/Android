@@ -21,7 +21,9 @@ import com.example.zhangliang.videonews.entity.BaseResponse;
 import com.example.zhangliang.videonews.entity.VideoEntity;
 import com.example.zhangliang.videonews.listener.OnItemChildClickListener;
 import com.example.zhangliang.videonews.listener.OnItemClickListener;
+import com.example.zhangliang.videonews.view.CircleTransform;
 import com.google.gson.Gson;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.List;
@@ -92,14 +94,14 @@ public class VideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             vh.flagLike = flagLike;
 
         }
-//        Picasso.with(mContext)
-//                .load(videoEntity.getHeadurl())
-//                .transform(new CircleTransform())
-//                .into(vh.imgHeader);
-//
-//        Picasso.with(mContext)
-//                .load(videoEntity.getCoverurl())
-//                .into(vh.mThumb);
+        Picasso.get()
+                .load(videoEntity.getHeadurl())
+                .transform(new CircleTransform())
+                .into(vh.imgHeader);
+
+        Picasso.get()
+                .load(videoEntity.getCoverurl())
+                .into(vh.mThumb);
         vh.mPosition = position;
     }
 

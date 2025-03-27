@@ -5,7 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.yunda.safe.plct.work.PollWorker.Companion.ACTION_REFRESH_WEBVIEW
-import java.time.LocalTime
+import org.threeten.bp.LocalTime
 import java.util.Calendar
 
 class AlarmService() {

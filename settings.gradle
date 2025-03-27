@@ -18,19 +18,11 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven { url 'https://maven.aliyun.com/repository/public/' }
         google()
         mavenCentral()
         gradlePluginPortal()
         maven { url "https://jitpack.io" }
-        maven { url 'https://maven.aliyun.com/repository/public/' }
-//        maven { url = uri("https://jitpack.io") }
-//        maven { url = uri("https://mvnrepository.com") }
-//        maven { url = uri("https://jcenter.bintray.com") }
-//        maven { url = uri("https://maven.aliyun.com/repository/public/") }
-//        jcenter()
-//        maven()
-//        maven { url 'https://mvnrepository.com/' }
-//        maven { url 'https://jitpack.io' }
     }
 }
 

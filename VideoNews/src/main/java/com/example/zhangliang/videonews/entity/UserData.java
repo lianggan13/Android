@@ -1,42 +1,44 @@
 package com.example.zhangliang.videonews.entity;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
 import java.util.List;
 
-public class UserData {
-    // @SerializedName("No")
+public class UserData implements Serializable {
+    @SerializedName("No")
     private int no;
 
-    // @SerializedName("CardNo")
+    @SerializedName("CardNo")
     private int cardNo;
 
-    // @SerializedName("Name")
+    @SerializedName("Name")
     private String name;
 
-    // @SerializedName("PhotoUrl")
+    @SerializedName("PhotoUrl")
     private String photoUrl;
 
-    // @SerializedName("Password")
+    @SerializedName("Password")
     private String password;
 
-    // @SerializedName("OldPassword")
+    @SerializedName("OldPassword")
     private String oldPassword;
 
-    // @SerializedName("NewPassword")
+    @SerializedName("NewPassword")
     private String newPassword;
 
-    // @SerializedName("RoleId")
+    @SerializedName("RoleId")
     private int roleId;
 
-    // @SerializedName("GroupId")
+    @SerializedName("GroupId")
     private int groupId;
 
-    // @SerializedName("Authorities")
+    //    @SerializedName("Authorities")
     private List<String> authorities;
 
-    // @SerializedName("Id")
+    @SerializedName("Id")
     private int id;
 
-    // Getters and Setters
     public int getNo() {
         return no;
     }

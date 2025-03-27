@@ -1,4 +1,4 @@
-package com.yunda.safe.plct.jsbridge;
+package com.example.wechart.jsbridge;
 
 import android.os.Looper;
 import android.os.SystemClock;

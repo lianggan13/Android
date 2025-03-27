@@ -6,6 +6,8 @@
     android:padding="8dp">
 
     <TextView
+        android:ellipsize="end"
+        android:singleLine="true"
         android:id="@+id/item_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

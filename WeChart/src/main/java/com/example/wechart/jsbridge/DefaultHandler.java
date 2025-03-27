@@ -1,4 +1,5 @@
-package com.yunda.safe.plct.jsbridge;
+package com.example.wechart.jsbridge;
+
 
 public class DefaultHandler implements BridgeHandler {
     @Override

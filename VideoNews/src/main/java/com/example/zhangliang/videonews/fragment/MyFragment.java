@@ -11,6 +11,8 @@ import com.example.zhangliang.videonews.R;
 import com.example.zhangliang.videonews.activity.LoginActivity;
 import com.example.zhangliang.videonews.activity.MyCollectActivity;
 
+import skin.support.SkinCompatManager;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link MyFragment#newInstance} factory method to
@@ -73,10 +75,10 @@ public class MyFragment extends BaseFragment implements View.OnClickListener {
                 String skin = findByKey("skin");
                 if (skin.equals("night")) {
                     // 恢复应用默认皮肤
-//                    SkinCompatManager.getInstance().restoreDefaultTheme();
+                    SkinCompatManager.getInstance().restoreDefaultTheme();
                     insertVal("skin", "default");
                 } else {
-//                    SkinCompatManager.getInstance().loadSkin("night", SkinCompatManager.SKIN_LOADER_STRATEGY_BUILD_IN); // 后缀加载
+                    SkinCompatManager.getInstance().loadSkin("night", SkinCompatManager.SKIN_LOADER_STRATEGY_BUILD_IN); // 后缀加载
                     insertVal("skin", "night");
                 }
                 break;

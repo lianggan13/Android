@@ -123,6 +123,7 @@ public class Api {
                     JSONObject jsonObject = new JSONObject(result);
                     String code = jsonObject.getString("code");
                     if (code.equals("401")) {
+                        // Token 401 -- 未授权 --> 登录页面
                         Intent in = new Intent(context, LoginActivity.class);
                         context.startActivity(in);
                     }

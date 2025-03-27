@@ -1,4 +1,4 @@
-package com.yunda.safe.plct.jsbridge;
+package com.example.wechart.jsbridge;
 
 import android.util.Log;
 import android.webkit.JavascriptInterface;
