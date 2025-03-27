@@ -1,4 +1,4 @@
-package com.yunda.safe.plct.jsbridge;
+package com.example.wechart.jsbridge;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

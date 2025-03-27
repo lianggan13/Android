@@ -1,4 +1,4 @@
-package com.yunda.safe.plct.jsbridge
+package com.example.wechart.jsbridge;
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -12,11 +12,13 @@ import android.webkit.WebView
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import com.example.wechart.R
 import com.google.gson.Gson
-import com.yunda.safe.plct.R
-import com.yunda.safe.plct.ui.webpage.TAG
+
 
 class JsWebActivity : AppCompatActivity(), View.OnClickListener {
+    private var TAG = "JsWebActivity";
+
     lateinit var webView: BridgeWebView
 
     lateinit var button: Button
@@ -144,5 +146,4 @@ class JsWebActivity : AppCompatActivity(), View.OnClickListener {
         var location: Location? = null
         var testStr: String? = null
     }
-
 }

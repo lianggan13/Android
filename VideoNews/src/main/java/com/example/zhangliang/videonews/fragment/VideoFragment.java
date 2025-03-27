@@ -18,8 +18,8 @@ import com.example.zhangliang.videonews.api.Api;
 import com.example.zhangliang.videonews.api.ApiConfig;
 import com.example.zhangliang.videonews.api.TtitCallback;
 import com.example.zhangliang.videonews.database.MysqlSeed;
+import com.example.zhangliang.videonews.entity.UserListResponse;
 import com.example.zhangliang.videonews.entity.VideoEntity;
-import com.example.zhangliang.videonews.entity.VideoListResponse;
 import com.example.zhangliang.videonews.listener.OnItemChildClickListener;
 import com.example.zhangliang.videonews.util.Tag;
 import com.example.zhangliang.videonews.util.Utils;
@@ -28,9 +28,12 @@ import com.scwang.smart.refresh.layout.api.RefreshLayout;
 import com.scwang.smart.refresh.layout.listener.OnLoadMoreListener;
 import com.scwang.smart.refresh.layout.listener.OnRefreshListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import xyz.doikki.videocontroller.StandardVideoController;
 import xyz.doikki.videocontroller.component.CompleteView;
@@ -38,6 +41,8 @@ import xyz.doikki.videocontroller.component.ErrorView;
 import xyz.doikki.videocontroller.component.GestureView;
 import xyz.doikki.videocontroller.component.TitleView;
 import xyz.doikki.videocontroller.component.VodControlView;
+import xyz.doikki.videoplayer.exo.ExoMediaPlayerFactory;
+import xyz.doikki.videoplayer.ijk.IjkPlayerFactory;
 import xyz.doikki.videoplayer.player.BaseVideoView;
 import xyz.doikki.videoplayer.player.VideoView;
 
@@ -87,7 +92,6 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
         return fragment;
     }
 
-
     @Override
     protected int initLayout() {
         return R.layout.fragment_video;
@@ -124,24 +128,35 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
             }
         });
 
+//        refreshLayout.setRefreshHeader(new ClassicsHeader(requireContext()));
+//        refreshLayout.setRefreshFooter(new ClassicsFooter(requireContext()));
+
+//        refreshLayout.setRefreshHeader(new MaterialHeader(this).setShowBezierWave(true));
+//        refreshLayout.setRefreshFooter(new BallPulseFooter(this).setSpinnerStyle(SpinnerStyle.Scale));
+
+//        refreshLayout.setRefreshHeader(new BezierRadarHeader(requireContext())
+//                .setEnableHorizontalDrag(true));
+//        refreshLayout.setRefreshFooter(new BallPulseFooter(requireContext())
+//                .setSpinnerStyle(SpinnerStyle.FixedFront));
+
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
                 pageNum = 1;
-//                getVideoList(true);
-                getVideoListLocal(true);
+                getVideoList(true);
+//                getVideoListLocal(true);
             }
         });
         refreshLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
             public void onLoadMore(RefreshLayout refreshlayout) {
                 pageNum++;
-//                getVideoList(false);
-                getVideoListLocal(false);
+                getVideoList(false);
+//                getVideoListLocal(false);
             }
         });
-//        getVideoList(true);
-        getVideoListLocal(true);
+        getVideoList(true);
+//        getVideoListLocal(true);
     }
 
     protected void initVideoView() {
@@ -150,7 +165,7 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
             @Override
             public void onPlayStateChanged(int playState) {
                 //监听VideoViewManager释放，重置状态
-                if (playState == xyz.doikki.videoplayer.player.VideoView.STATE_IDLE) {
+                if (playState == VideoView.STATE_IDLE) {
                     Utils.removeViewFormParent(mVideoView);
                     mLastPos = mCurPos;
                     mCurPos = -1;
@@ -224,10 +239,19 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
 //        String proxyUrl = ProxyVideoCacheManager.getProxy(getActivity()).getProxyUrl(videoBean.getUrl());
 //        mVideoView.setUrl(proxyUrl);
 
-        mVideoView.setUrl(videoEntity.getPlayurl());
-        mTitleView.setTitle(videoEntity.getVtitle());
+        var title = videoEntity.getVtitle();
+        var url = videoEntity.getPlayurl();
+        if (url.toLowerCase().endsWith(".mp4")) {
+            mVideoView.setPlayerFactory(ExoMediaPlayerFactory.create());
+        } else if (url.toLowerCase().startsWith("rtsp:")) {
+            mVideoView.setPlayerFactory(IjkPlayerFactory.create());
+        }
+
+        mVideoView.setUrl(url);
+        mTitleView.setTitle(title);
         View itemView = linearLayoutManager.findViewByPosition(position);
         if (itemView == null) return;
+
         VideoAdapter.ViewHolder viewHolder = (VideoAdapter.ViewHolder) itemView.getTag();
         //把列表中预置的PrepareView添加到控制器中，注意isPrivate此处只能为true。
         mController.addControlComponent(viewHolder.mPrepareView, true);
@@ -237,7 +261,6 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
         getVideoViewManager().add(mVideoView, Tag.LIST);
         mVideoView.start();
         mCurPos = position;
-
     }
 
     private void releaseVideoView() {
@@ -258,7 +281,7 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
         params.put("page", pageNum);
         params.put("limit", ApiConfig.PAGE_SIZE);
         params.put("categoryId", categoryId);
-        Api.config(ApiConfig.VIDEO_LIST_BY_CATEGORY, params).getRequest(getActivity(), new TtitCallback() {
+        Api.config(ApiConfig.USER_LIST, params).getRequest(getActivity(), new TtitCallback() {
             @Override
             public void onSuccess(final String res) {
                 if (isRefresh) {
@@ -266,9 +289,30 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
                 } else {
                     refreshLayout.finishLoadMore(true);
                 }
-                VideoListResponse response = new Gson().fromJson(res, VideoListResponse.class);
-                if (response != null && response.getCode() == 0) {
-                    List<VideoEntity> list = response.getPage().getList();
+
+//                VideoListResponse response = new Gson().fromJson(res, VideoListResponse.class);
+                var response = new Gson().fromJson(res, UserListResponse.class);
+                if (response != null && response.getCode() == 200) {
+//                    List<VideoEntity> list = response.getPage().getList();
+                    var userList = response.getUserDatas();
+                    var list = new ArrayList<VideoEntity>();
+                    var currentTime = new Date();
+                    var dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                    var formattedTime = dateFormat.format(currentTime);
+                    for (int i = 0; i < userList.size(); i++) {
+                        var id = i + 1;
+                        var u = userList.get(i);
+                        var coverurl = u.getPhotoUrl();
+                        var headurl = u.getPhotoUrl();
+//                        var playurl = u.getPhotoUrl();
+//                        var playurl = "http://10.60.0.179:8080/api/video/stream/WenS2.mp4"; //u.getPhotoUrl();
+
+                        var playurl = ApiConfig.BASE_URl + "/api/video/stream/video_" + i % 3 + ".mp4";
+                        var video = MysqlSeed.createVideo(id, u.getName(), u.getName(), coverurl, headurl, playurl, formattedTime, formattedTime,
+                                id % 6);
+                        list.add(video);
+                    }
+
                     if (list != null && list.size() > 0) {
                         if (isRefresh) {
                             datas = list;

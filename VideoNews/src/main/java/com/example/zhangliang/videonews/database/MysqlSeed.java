@@ -188,9 +188,9 @@ public class MysqlSeed {
         return pagedList;
     }
 
-    private static VideoEntity createVideo(int vid, String vtitle, String author, String coverurl,
-                                           String headurl, String playurl, String createTime,
-                                           String updateTime, int categoryId) {
+    public static VideoEntity createVideo(int vid, String vtitle, String author, String coverurl,
+                                          String headurl, String playurl, String createTime,
+                                          String updateTime, int categoryId) {
         VideoEntity video = new VideoEntity();
         video.setVid(vid);
         video.setVtitle(vtitle);

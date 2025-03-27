@@ -22,9 +22,12 @@
         <AutoCompleteTextView
             android:id="@+id/searchBox"
             android:layout_width="0dp"
+            android:ellipsize="end"
+            android:singleLine="true"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="http://+"
+            android:maxLines="3"
             android:completionThreshold="1" />
 
         <ImageView

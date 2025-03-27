@@ -70,6 +70,7 @@ public class LoginActivity extends BaseActivity {
                 if (loginResponse.getCode() == 200) {
                     String token = loginResponse.getToken();
                     insertVal("token", token);
+                    // FLAG_ACTIVITY_CLEAR_TASK: 清除回退栈：点击回退，不会返回之前的页面
                     navigateToWithFlag(HomeActivity.class,
                             Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
 

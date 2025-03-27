@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "com.yunda.safe.plct"
-//        minSdk = 24
-        minSdk = 26
+        minSdk = 24
+        //     minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -25,7 +25,9 @@ android {
 //        }
 
         release {
-            isMinifyEnabled = false
+//            isMinifyEnabled = false
+            isMinifyEnabled = true // 启用混淆，减少 APK 大小并保护代码。
+            isShrinkResources = true // 移除未使用的资源文件，以减小 APK 大小
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -74,4 +76,6 @@ dependencies {
     implementation(libs.xlog)
     implementation("com.elvishew:xlog-libcat:1.0.0")
     implementation("com.google.code.gson:gson:2.11.0")
+
+    implementation("com.jakewharton.threetenabp:threetenabp:1.4.6")
 }
