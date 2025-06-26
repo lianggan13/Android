@@ -15,7 +15,7 @@ import com.example.zhangliang.videonews.R;
 import com.example.zhangliang.videonews.adapter.MyCollectAdapter;
 import com.example.zhangliang.videonews.api.Api;
 import com.example.zhangliang.videonews.api.ApiConfig;
-import com.example.zhangliang.videonews.api.TtitCallback;
+import com.example.zhangliang.videonews.api.HttpCallback;
 import com.example.zhangliang.videonews.database.MysqlSeed;
 import com.example.zhangliang.videonews.entity.MyCollectResponse;
 import com.example.zhangliang.videonews.entity.VideoEntity;
@@ -222,7 +222,7 @@ public class MyCollectActivity extends BaseActivity implements OnItemChildClickL
 
     private void getVideoList() {
         HashMap<String, Object> params = new HashMap<>();
-        Api.config(ApiConfig.VIDEO_MYCOLLECT, params).getRequest(this, new TtitCallback() {
+        Api.config(ApiConfig.VIDEO_MYCOLLECT, params).getRequest(this, new HttpCallback() {
             @Override
             public void onSuccess(final String res) {
                 MyCollectResponse response = new Gson().fromJson(res, MyCollectResponse.class);

@@ -1,0 +1,4 @@
+<paths>
+    <!-- 允许访问整个外部存储（如 /storage/emulated/0/） -->
+    <external-path name="external_files" path="." />
+</paths>

@@ -18,7 +18,7 @@ import com.example.zhangliang.videonews.adapter.CardViewAdapter;
 import com.example.zhangliang.videonews.adapter.NewsAdapter;
 import com.example.zhangliang.videonews.api.Api;
 import com.example.zhangliang.videonews.api.ApiConfig;
-import com.example.zhangliang.videonews.api.TtitCallback;
+import com.example.zhangliang.videonews.api.HttpCallback;
 import com.example.zhangliang.videonews.database.MysqlSeed;
 import com.example.zhangliang.videonews.entity.CategoryEntity;
 import com.example.zhangliang.videonews.entity.NewsEntity;
@@ -170,7 +170,7 @@ public class NewsFragment extends BaseFragment {
         HashMap<String, Object> params = new HashMap<>();
         params.put("page", pageNum);
         params.put("limit", ApiConfig.PAGE_SIZE);
-        Api.config(ApiConfig.NEWS_LIST, params).getRequest(getActivity(), new TtitCallback() {
+        Api.config(ApiConfig.NEWS_LIST, params).getRequest(getActivity(), new HttpCallback() {
             @Override
             public void onSuccess(final String res) {
                 if (isRefresh) {

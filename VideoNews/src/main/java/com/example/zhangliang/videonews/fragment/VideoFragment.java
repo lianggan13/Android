@@ -16,7 +16,7 @@ import com.example.zhangliang.videonews.R;
 import com.example.zhangliang.videonews.adapter.VideoAdapter;
 import com.example.zhangliang.videonews.api.Api;
 import com.example.zhangliang.videonews.api.ApiConfig;
-import com.example.zhangliang.videonews.api.TtitCallback;
+import com.example.zhangliang.videonews.api.HttpCallback;
 import com.example.zhangliang.videonews.database.MysqlSeed;
 import com.example.zhangliang.videonews.entity.UserListResponse;
 import com.example.zhangliang.videonews.entity.VideoEntity;
@@ -281,7 +281,7 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
         params.put("page", pageNum);
         params.put("limit", ApiConfig.PAGE_SIZE);
         params.put("categoryId", categoryId);
-        Api.config(ApiConfig.USER_LIST, params).getRequest(getActivity(), new TtitCallback() {
+        Api.config(ApiConfig.USER_LIST, params).getRequest(getActivity(), new HttpCallback() {
             @Override
             public void onSuccess(final String res) {
                 if (isRefresh) {

@@ -8,7 +8,7 @@ import android.widget.EditText;
 import com.example.zhangliang.videonews.R;
 import com.example.zhangliang.videonews.api.Api;
 import com.example.zhangliang.videonews.api.ApiConfig;
-import com.example.zhangliang.videonews.api.TtitCallback;
+import com.example.zhangliang.videonews.api.HttpCallback;
 import com.example.zhangliang.videonews.util.StringUtils;
 
 import java.util.HashMap;
@@ -55,7 +55,7 @@ public class RegisterActivity extends BaseActivity {
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("no", account);
         params.put("password", pwd);
-        Api.config(ApiConfig.REGISTER, params).postRequest(this, Api::buildJsonBody, new TtitCallback() {
+        Api.config(ApiConfig.REGISTER, params).postRequest(this, Api::buildJsonBody, new HttpCallback() {
             @Override
             public void onSuccess(final String res) {
                 runOnUiThread(new Runnable() {

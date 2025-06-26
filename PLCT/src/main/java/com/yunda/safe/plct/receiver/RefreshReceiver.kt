@@ -5,25 +5,34 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
-import com.yunda.safe.plct.work.PollWorker.Companion.ACTION_REFRESH_WEBVIEW
+import com.yunda.safe.plct.common.StringConstants
+import java.util.concurrent.ConcurrentHashMap
+
 
 class RefreshReceiver(private val callback: (Context?, Intent?) -> Unit) : BroadcastReceiver() {
 
     companion object {
-        private lateinit var receiver: RefreshReceiver
+        private val receiverMap = ConcurrentHashMap<Context, RefreshReceiver>()
 
         fun register(context: Context, callback: (Context?, Intent?) -> Unit) {
-            receiver = RefreshReceiver(callback)
+            if (receiverMap.containsKey(context)) {
+                return
+            }
+            val receiver = RefreshReceiver(callback)
+            receiverMap[context] = receiver
             ContextCompat.registerReceiver(
                 context,
                 receiver,
-                IntentFilter(ACTION_REFRESH_WEBVIEW),
+                IntentFilter(StringConstants.ACTION_REFRESH_WEBVIEW),
                 ContextCompat.RECEIVER_NOT_EXPORTED
             )
         }
 
         fun unRegister(context: Context) {
-            context.unregisterReceiver(receiver)
+            val receiver = receiverMap.remove(context)
+            if (receiver != null) {
+                context.unregisterReceiver(receiver)
+            }
         }
     }
 

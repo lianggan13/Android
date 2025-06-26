@@ -10,7 +10,7 @@ import android.widget.EditText;
 import com.example.zhangliang.videonews.R;
 import com.example.zhangliang.videonews.api.Api;
 import com.example.zhangliang.videonews.api.ApiConfig;
-import com.example.zhangliang.videonews.api.TtitCallback;
+import com.example.zhangliang.videonews.api.HttpCallback;
 import com.example.zhangliang.videonews.entity.LoginResponse;
 import com.example.zhangliang.videonews.util.StringUtils;
 import com.google.gson.Gson;
@@ -61,7 +61,7 @@ public class LoginActivity extends BaseActivity {
         HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("no", account);
         params.put("password", pwd);
-        Api.config(ApiConfig.LOGIN, params).postRequest(this, Api::buildFormBody, new TtitCallback() {
+        Api.config(ApiConfig.LOGIN, params).postRequest(this, Api::buildFormBody, new HttpCallback() {
             @Override
             public void onSuccess(final String res) {
                 Log.e("onSuccess", res);
