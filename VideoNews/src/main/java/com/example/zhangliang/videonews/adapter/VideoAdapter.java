@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.zhangliang.videonews.R;
 import com.example.zhangliang.videonews.api.Api;
 import com.example.zhangliang.videonews.api.ApiConfig;
-import com.example.zhangliang.videonews.api.TtitCallback;
+import com.example.zhangliang.videonews.api.HttpCallback;
 import com.example.zhangliang.videonews.entity.BaseResponse;
 import com.example.zhangliang.videonews.entity.VideoEntity;
 import com.example.zhangliang.videonews.listener.OnItemChildClickListener;
@@ -214,7 +214,7 @@ public class VideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         params.put("vid", vid);
         params.put("type", type);
         params.put("flag", flag);
-        Api.config(ApiConfig.VIDEO_UPDATE_COUNT, params).postRequest(mContext, Api::buildJsonBody, new TtitCallback() {
+        Api.config(ApiConfig.VIDEO_UPDATE_COUNT, params).postRequest(mContext, Api::buildJsonBody, new HttpCallback() {
             @Override
             public void onSuccess(final String res) {
                 Log.e("onSuccess", res);

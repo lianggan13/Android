@@ -3,12 +3,15 @@ package com.yunda.safe.plct
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import com.elvishew.xlog.XLog
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.yunda.safe.plct.database.AppRepository
+import com.yunda.safe.plct.handle.PollWorker
 import com.yunda.safe.plct.utility.Logger
 import com.yunda.safe.plct.utility.Preferences
 
@@ -18,7 +21,22 @@ class App : Application() {
         super.onCreate()
 
         Logger.init(this@App)
-        XLog.i("App onCreated.")
+
+        val pm = this.packageManager
+        val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val info = pm.getPackageInfo(this.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+            info.signingInfo?.apkContentsSigners ?: emptyArray()
+        } else {
+            //    @Suppress("DEPRECATION")
+            val info = pm.getPackageInfo(this.packageName, PackageManager.GET_SIGNATURES)
+            info.signatures
+        }
+
+        signatures?.forEach {
+            XLog.i("APK Signer: $it.toCharsString()")
+        }
+
+//        Tester.testApi()
 
 //        val intent = Intent(applicationContext, BootService::class.java)
 //        startService(intent)
@@ -31,10 +49,20 @@ class App : Application() {
         AndroidThreeTen.init(this@App)
         Preferences.init(this@App)
         AppRepository.initialize(this@App)
+
+        // 启动 PollWorker
+        PollWorker.start(this@App)
+
+//        PollService.start(this@App)
     }
 
     override fun onTerminate() {
         super.onTerminate()
+
+        PollWorker.cancel(this@App)
+
+//        PollService.stop(this@App)
+
         AppRepository.get().close()
     }
 
@@ -42,9 +70,10 @@ class App : Application() {
         val intent = packageManager.getLaunchIntentForPackage(packageName)
         intent!!.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
-
         System.exit(0)
     }
+
+
 }
 
 class GlobalCrashHandler(private val mContext: Context) : Thread.UncaughtExceptionHandler {

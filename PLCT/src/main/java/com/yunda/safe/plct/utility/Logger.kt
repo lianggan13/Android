@@ -24,6 +24,7 @@ import java.util.Date
 object Logger {
 
     fun init(content: Context) {
+        // /storage/emulated/0/Android/data/com.yunda.safe.plct/files/logs/...
         val logDir = File(content.getExternalFilesDir(null), "logs")
         if (!logDir.exists()) {
             logDir.mkdirs()

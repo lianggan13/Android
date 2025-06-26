@@ -1,0 +1,148 @@
+package com.yunda.safe.plct.handle
+
+import android.os.AsyncTask
+import android.os.Environment
+import com.elvishew.xlog.XLog
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.File
+import java.io.InputStream
+import java.io.RandomAccessFile
+
+class DownloadTask(private val listener: DownloadListener) : AsyncTask<String, Int, Int>() {
+
+    companion object {
+        const val TYPE_SUCCESS = 0
+        const val TYPE_FAILED = 1
+        const val TYPE_PAUSED = 2
+        const val TYPE_CANCELED = 3
+    }
+
+    @Volatile
+    private var isCanceled = false
+
+    @Volatile
+    private var isPaused = false
+
+    private var lastProgress = 0
+
+    override fun doInBackground(vararg params: String): Int {
+        var inputStream: InputStream? = null
+        var savedFile: RandomAccessFile? = null
+        var file: File? = null
+        try {
+            var downloadedLength: Long = 0
+            val downloadUrl = params[0]
+            val fileName = downloadUrl.substring(downloadUrl.lastIndexOf("/"))
+            val directory =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
+            file = File(directory + fileName)
+            XLog.i("APK: $file")
+            if (file.exists()) {
+                downloadedLength = file.length()
+                // TODO: for debug & test
+                file.delete()
+                downloadedLength = 0;
+            }
+
+            val contentLength = getContentLength(downloadUrl)
+            if (contentLength == 0L) {
+                return TYPE_FAILED
+            } else if (contentLength == downloadedLength) {
+                return TYPE_SUCCESS
+            } else if (contentLength < downloadedLength) {
+                file.delete()
+                downloadedLength = 0
+            }
+            val client = OkHttpClient()
+            val request = Request.Builder()
+                .addHeader("RANGE", "bytes=$downloadedLength-")
+                .url(downloadUrl)
+                .build()
+            val response = client.newCall(request).execute()
+            if (response != null) {
+                inputStream = response.body?.byteStream()
+                savedFile = RandomAccessFile(file, "rw")
+                savedFile.seek(downloadedLength)
+                val buffer = ByteArray(1024)
+                var total = 0
+                var len: Int
+                var lastLogProgress = 0
+                while (inputStream?.read(buffer).also { len = it ?: -1 } != -1) {
+                    when {
+                        isCanceled -> return TYPE_CANCELED
+                        isPaused -> return TYPE_PAUSED
+                        else -> {
+                            total += len
+                            savedFile.write(buffer, 0, len)
+                            val progress =
+                                ((total + downloadedLength) * 100 / contentLength).toInt()
+                            publishProgress(progress)
+                            if (progress / 10 > lastLogProgress / 10) {
+                                lastLogProgress = progress
+                                XLog.tag("DownloadTask").i(
+                                    "Download: $total, Exists: $downloadedLength, Total: $contentLength, Progress: $progress%"
+                                )
+                            }
+                        }
+                    }
+                }
+                response.body?.close()
+                return TYPE_SUCCESS
+            }
+        } catch (e: Exception) {
+            XLog.e(e.message, e)
+        } finally {
+            try {
+                inputStream?.close()
+                savedFile?.close()
+                if (isCanceled && file != null) {
+                    file.delete()
+                }
+            } catch (e: Exception) {
+                XLog.e(e.message, e)
+            }
+        }
+        return TYPE_FAILED
+    }
+
+    override fun onProgressUpdate(vararg values: Int?) {
+        val progress = values[0] ?: 0
+        if (progress > lastProgress) {
+            listener.onProgress(progress)
+            lastProgress = progress
+        }
+    }
+
+    override fun onPostExecute(status: Int?) {
+        when (status) {
+            TYPE_SUCCESS -> listener.onSuccess()
+            TYPE_FAILED -> listener.onFailed()
+            TYPE_PAUSED -> listener.onPaused()
+            TYPE_CANCELED -> listener.onCanceled()
+        }
+    }
+
+    fun pauseDownload() {
+        isPaused = true
+    }
+
+    fun cancelDownload() {
+        isCanceled = true
+    }
+
+    private fun getContentLength(downloadUrl: String): Long {
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url(downloadUrl)
+            .build()
+        val response = client.newCall(request).execute()
+        if (response != null && response.isSuccessful) {
+            val contentLengthStr = response.header("ContentLength")
+            val contentLength = contentLengthStr?.toLongOrNull() ?: 0L
+            response.close()
+            return contentLength
+        }
+        return 0
+    }
+}

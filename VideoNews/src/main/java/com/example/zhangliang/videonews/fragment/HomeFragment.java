@@ -7,7 +7,7 @@ import com.example.zhangliang.videonews.R;
 import com.example.zhangliang.videonews.adapter.HomeAdapter;
 import com.example.zhangliang.videonews.api.Api;
 import com.example.zhangliang.videonews.api.ApiConfig;
-import com.example.zhangliang.videonews.api.TtitCallback;
+import com.example.zhangliang.videonews.api.HttpCallback;
 import com.example.zhangliang.videonews.entity.CategoryEntity;
 import com.example.zhangliang.videonews.entity.VideoCategoryResponse;
 import com.flyco.tablayout.SlidingTabLayout;
@@ -55,7 +55,7 @@ public class HomeFragment extends BaseFragment {
 
     private void getVideoCategoryList() {
         HashMap<String, Object> params = new HashMap<>();
-        Api.config(ApiConfig.VIDEO_CATEGORY_LIST, params).getRequest(getActivity(), new TtitCallback() {
+        Api.config(ApiConfig.VIDEO_CATEGORY_LIST, params).getRequest(getActivity(), new HttpCallback() {
             @Override
             public void onSuccess(final String res) {
                 getActivity().runOnUiThread(new Runnable() {

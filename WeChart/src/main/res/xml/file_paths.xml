@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!--    内部存储目录 getFilesDir-->
+    <files-path
+        name="in_photos"
+        path="." />
+
+    <!--    外部存储目录 getExternalCacheDir-->
+    <external-path
+        name="my_images"
+        path="." />
+
+</paths>

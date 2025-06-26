@@ -33,6 +33,7 @@ public class Api {
     private static OkHttpClient client;
     private static String requestUrl;
     private static HashMap<String, Object> mParams;
+
     public static Api api = new Api();
 
     public Api() {
@@ -47,43 +48,17 @@ public class Api {
         return api;
     }
 
-
-    public static RequestBody buildJsonBody() {
-        JSONObject jsonObject = new JSONObject(mParams);
-        String jsonStr = jsonObject.toString();
-        RequestBody requestBodyJson =
-                RequestBody.create(MediaType.parse("application/json;charset=utf-8")
-                        , jsonStr);
-        return requestBodyJson;
-    }
-
-    public static RequestBody buildFormBody() {
-        // 创建表单数据
-        FormBody.Builder formBuilder = new FormBody.Builder();
-//        formBuilder.add("key1", "value1");
-//        formBuilder.add("key2", "value2");
-        for (HashMap.Entry<String, Object> entry : mParams.entrySet()) {
-            formBuilder.add(entry.getKey(), entry.getValue().toString());
-        }
-        FormBody formBody = formBuilder.build();
-        return formBody;
-    }
-
-    public void postRequest(Context context, Supplier<RequestBody> bodySupplier, final TtitCallback callback) {
+    public void postRequest(Context context, Supplier<RequestBody> bodySupplier, final HttpCallback callback) {
         SharedPreferences sp = context.getSharedPreferences("sp_ttit", MODE_PRIVATE);
         String token = sp.getString("token", "");
         RequestBody body = bodySupplier.get();
-        //第三步创建Rquest
         Request request = new Request.Builder()
                 .url(requestUrl)
                 .addHeader("contentType", "application/json;charset=UTF-8")
                 .addHeader("token", token)
-//                .post(requestBodyJson)
                 .post(body)
                 .build();
-        //第四步创建call回调对象
         final Call call = client.newCall(request);
-        //第五步发起请求
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -99,7 +74,7 @@ public class Api {
         });
     }
 
-    public void getRequest(Context context, final TtitCallback callback) {
+    public void getRequest(Context context, final HttpCallback callback) {
         SharedPreferences sp = context.getSharedPreferences("sp_ttit", MODE_PRIVATE);
         String token = sp.getString("token", "");
         String url = getAppendUrl(requestUrl, mParams);
@@ -151,6 +126,24 @@ public class Api {
             url += buffer.toString();
         }
         return url;
+    }
+
+    public static RequestBody buildJsonBody() {
+        JSONObject jsonObject = new JSONObject(mParams);
+        String jsonStr = jsonObject.toString();
+        RequestBody requestBodyJson =
+                RequestBody.create(MediaType.parse("application/json;charset=utf-8")
+                        , jsonStr);
+        return requestBodyJson;
+    }
+
+    public static RequestBody buildFormBody() {
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        for (HashMap.Entry<String, Object> entry : mParams.entrySet()) {
+            formBuilder.add(entry.getKey(), entry.getValue().toString());
+        }
+        FormBody formBody = formBuilder.build();
+        return formBody;
     }
 }
 

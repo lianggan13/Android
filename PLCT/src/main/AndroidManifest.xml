@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <permission
+        android:name="${applicationId}.PRIVATE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="${applicationId}.PRIVATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- 声明前台服务的权限 -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- 注册 BOOT_COMPLETED 广播接收器 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -17,11 +23,31 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Android.DarkActionBar.NoActionBar"
         android:usesCleartextTraffic="true">
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <service
             android:name=".service.BootService"
             android:enabled="true"
             android:exported="false" />
-    
+
+        <service
+            android:name=".service.PollService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
+            android:name=".service.DownloadService"
+            android:enabled="true"
+            android:exported="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -44,6 +70,18 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <!-- 兼容 Android 8.0+ -->
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <!--        登记 NotificationReceiver 为 standalone receiver-->
+        <receiver
+            android:name=".receiver.NotificationReceiver"
+            android:exported="false"
+            android:permission="${applicationId}.PRIVATE">
+
+            <!-- 最低的优先级，-999，而-1000是系统保留的值 -->
+            <intent-filter android:priority="-999">
+                <action android:name="${applicationId}.SHOW_NOTIFICATION" />
             </intent-filter>
         </receiver>
     </application>
