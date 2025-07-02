@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.zhangliang.videonews.R;
 import com.example.zhangliang.videonews.entity.NewsEntity;
-import com.example.zhangliang.videonews.view.CircleTransform;
+import com.example.zhangliang.videonews.util.CircleTransform;
 import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;

@@ -12,27 +12,40 @@ import android.os.IBinder
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.yunda.safe.plct.MainActivity
+import com.yunda.safe.plct.R
+import com.yunda.safe.plct.handle.DownloadCoroutine
 import com.yunda.safe.plct.handle.DownloadListener
-import com.yunda.safe.plct.handle.DownloadTask
 import java.io.File
 
 class DownloadService : Service() {
 
-    private var downloadTask: DownloadTask? = null
+    //    private var downloadTask: DownloadTask? = null
+    private var downloadTask: DownloadCoroutine? = null
+
     private var downloadUrl: String? = null
 
     private val listener = object : DownloadListener {
         override fun onProgress(progress: Int) {
-            getNotificationManager().notify(1, getNotification("Downloading...", progress))
+            getNotificationManager().notify(
+                1,
+                getNotification(getString(R.string.downloading), progress)
+            )
         }
 
         override fun onSuccess() {
             downloadTask = null
-            stopForeground(true)
-            getNotificationManager().notify(1, getNotification("Download Success", -1))
-            Toast.makeText(this@DownloadService, "Download Success", Toast.LENGTH_SHORT).show()
+            stopForeground()
+            getNotificationManager().notify(
+                1,
+                getNotification(getString(R.string.download_success), -1)
+            )
+            Toast.makeText(
+                this@DownloadService,
+                getString(R.string.download_success),
+                Toast.LENGTH_SHORT
+            ).show()
 
-            // 假设 downloadUrl 不为空
+
             val fileName = downloadUrl?.substring(downloadUrl!!.lastIndexOf("/")) ?: return
             val directory =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
@@ -55,20 +68,46 @@ class DownloadService : Service() {
 
         override fun onFailed() {
             downloadTask = null
-            stopForeground(true)
-            getNotificationManager().notify(1, getNotification("Download Failed", -1))
-            Toast.makeText(this@DownloadService, "Download Failed", Toast.LENGTH_SHORT).show()
+            stopForeground()
+            getNotificationManager().notify(
+                1,
+                getNotification(getString(R.string.download_failed), -1)
+            )
+            Toast.makeText(
+                this@DownloadService,
+                getString(R.string.download_failed),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         override fun onPaused() {
             downloadTask = null
-            Toast.makeText(this@DownloadService, "Paused", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this@DownloadService,
+                getString(R.string.download_paused),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         override fun onCanceled() {
             downloadTask = null
+            stopForeground()
+            Toast.makeText(
+                this@DownloadService,
+                getString(R.string.download_cancel),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    public fun stopForeground() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // Android 14+
+            stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        } else {
+            // 旧版本
+            @Suppress("DEPRECATION")
             stopForeground(true)
-            Toast.makeText(this@DownloadService, "Canceled", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -95,10 +134,18 @@ class DownloadService : Service() {
         fun startDownload(url: String?) {
             if (downloadTask == null) {
                 downloadUrl = url
-                downloadTask = DownloadTask(listener)
-                downloadTask?.execute(downloadUrl)
-                startForeground(1, getNotification("Downloading...", 0))
-                Toast.makeText(this@DownloadService, "Downloading...", Toast.LENGTH_SHORT).show()
+                if (downloadUrl != null) {
+                    //  downloadTask = DownloadTask(listener)
+                    //  downloadTask?.execute(downloadUrl)
+                    downloadTask = DownloadCoroutine(listener)
+                    downloadTask?.start(downloadUrl!!)
+                    startForeground(1, getNotification(getString(R.string.downloading), 0))
+                    Toast.makeText(
+                        this@DownloadService,
+                        getString(R.string.downloading),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
 
@@ -119,8 +166,12 @@ class DownloadService : Service() {
                         file.delete()
                     }
                     getNotificationManager().cancel(1)
-                    stopForeground(true)
-                    Toast.makeText(this@DownloadService, "Canceled", Toast.LENGTH_SHORT).show()
+                    stopForeground()
+                    Toast.makeText(
+                        this@DownloadService,
+                        getString(R.string.download_cancel),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -131,13 +182,12 @@ class DownloadService : Service() {
     }
 
     private fun getNotification(title: String, progress: Int): Notification {
-        val channelId = "download_channel"
-        val channelName = "下载通知"
+        val channelId = "download_channel_id"
+        val channelName = "download_channel_name"
 
         // Android 8.0+ 创建通知通道（幂等，已存在不会重复创建）
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val notificationManager = getNotificationManager()
-            // 检查通道是否已存在（可选，直接创建也没问题）
             if (notificationManager.getNotificationChannel(channelId) == null) {
                 val channel = android.app.NotificationChannel(
                     channelId,

@@ -10,6 +10,7 @@ import android.os.Looper
 import android.widget.Toast
 import com.elvishew.xlog.XLog
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.yunda.safe.plct.common.APK_VERSION
 import com.yunda.safe.plct.database.AppRepository
 import com.yunda.safe.plct.handle.PollWorker
 import com.yunda.safe.plct.utility.Logger
@@ -23,26 +24,36 @@ class App : Application() {
         Logger.init(this@App)
 
         val pm = this.packageManager
-        val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val info = pm.getPackageInfo(this.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
-            info.signingInfo?.apkContentsSigners ?: emptyArray()
+        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            pm.getPackageInfo(this.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
         } else {
-            //    @Suppress("DEPRECATION")
-            val info = pm.getPackageInfo(this.packageName, PackageManager.GET_SIGNATURES)
-            info.signatures
+            @Suppress("DEPRECATION")
+            pm.getPackageInfo(this.packageName, PackageManager.GET_SIGNATURES)
         }
 
+        // 获取版本信息
+        val versionName = info.versionName
+        val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            info.longVersionCode
+        } else {
+            @Suppress("DEPRECATION")
+            info.versionCode.toLong()
+        }
+
+        XLog.i("APK versionName: $versionName, versionCode: $versionCode")
+
+        // 获取签名信息
+        val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            info.signingInfo?.apkContentsSigners ?: emptyArray()
+        } else {
+            @Suppress("DEPRECATION")
+            info.signatures
+        }
         signatures?.forEach {
-            XLog.i("APK Signer: $it.toCharsString()")
+            XLog.i("APK Signer: ${it.toCharsString()}")
         }
 
 //        Tester.testApi()
-
-//        val intent = Intent(applicationContext, BootService::class.java)
-//        startService(intent)
-
-//        val filter = IntentFilter(Intent.ACTION_BOOT_COMPLETED)
-//        registerReceiver(BootReceiver(), filter)
 
         Thread.setDefaultUncaughtExceptionHandler(GlobalCrashHandler(this@App))
 
@@ -50,10 +61,10 @@ class App : Application() {
         Preferences.init(this@App)
         AppRepository.initialize(this@App)
 
-        // 启动 PollWorker
         PollWorker.start(this@App)
 
 //        PollService.start(this@App)
+        Preferences.saveString(APK_VERSION, versionName);
     }
 
     override fun onTerminate() {
@@ -72,8 +83,6 @@ class App : Application() {
         startActivity(intent)
         System.exit(0)
     }
-
-
 }
 
 class GlobalCrashHandler(private val mContext: Context) : Thread.UncaughtExceptionHandler {

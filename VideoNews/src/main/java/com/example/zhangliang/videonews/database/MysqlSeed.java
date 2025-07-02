@@ -12,7 +12,6 @@ public class MysqlSeed {
 
         // 创建一个 List<VideoEntity>
         List<VideoEntity> videoList = new ArrayList<>();
-
         videoList.add(createVideo(1, "青龙战甲搭配机动兵，P城上空肆意1V4", "狙击手麦克",
                 "http://sf3-xgcdn-tos.pstatp.com/img/tos-cn-i-0004/527d013205a74eb0a77202d7a9d5b511~tplv-crop-center:1041:582.jpg",
                 "https://sf1-ttcdn-tos.pstatp.com/img/pgc-image/c783a73368fa4666b7842a635c63a8bf~360x360.image",

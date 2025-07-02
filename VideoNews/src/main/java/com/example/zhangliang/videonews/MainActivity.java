@@ -65,6 +65,6 @@ public class MainActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         // 停止方法追踪
-//        Debug.stopMethodTracing();
+//       Debug.stopMethodTracing();
     }
 }

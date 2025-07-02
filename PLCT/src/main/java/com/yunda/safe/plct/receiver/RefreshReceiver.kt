@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
-import com.yunda.safe.plct.common.StringConstants
+import com.yunda.safe.plct.common.ACTION_REFRESH_WEBVIEW
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -23,7 +23,7 @@ class RefreshReceiver(private val callback: (Context?, Intent?) -> Unit) : Broad
             ContextCompat.registerReceiver(
                 context,
                 receiver,
-                IntentFilter(StringConstants.ACTION_REFRESH_WEBVIEW),
+                IntentFilter(ACTION_REFRESH_WEBVIEW),
                 ContextCompat.RECEIVER_NOT_EXPORTED
             )
         }

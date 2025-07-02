@@ -15,7 +15,7 @@ import com.example.zhangliang.videonews.R;
 import com.example.zhangliang.videonews.entity.VideoEntity;
 import com.example.zhangliang.videonews.listener.OnItemChildClickListener;
 import com.example.zhangliang.videonews.listener.OnItemClickListener;
-import com.example.zhangliang.videonews.view.CircleTransform;
+import com.example.zhangliang.videonews.util.CircleTransform;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

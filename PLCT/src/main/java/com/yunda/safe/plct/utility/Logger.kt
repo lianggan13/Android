@@ -30,7 +30,7 @@ object Logger {
             logDir.mkdirs()
         }
 
-        val MAX_TIME = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000 // 设置为7天前
+        val maxTime = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000 // 设置为7天前
 
         val filePrinter: Printer = FilePrinter.Builder(logDir.absolutePath)
             .fileNameGenerator(object : FileNameGenerator {
@@ -48,7 +48,7 @@ object Logger {
             .backupStrategy(NeverBackupStrategy()) // 指定日志文件备份策略，默认为 FileSizeBackupStrategy(1024 * 1024)
 //            .backupStrategy(FileTimeBackupStrategy(24 * 60 * 60 * 1000)) // 每24小时备份一次
             .cleanStrategy(NeverCleanStrategy())
-            .cleanStrategy(FileLastModifiedCleanStrategy(MAX_TIME))
+            .cleanStrategy(FileLastModifiedCleanStrategy(maxTime))
             .flattener(object : Flattener2 {
                 private val dateFormat = SimpleDateFormat("HH:mm:ss.SSS")
                 override fun flatten(

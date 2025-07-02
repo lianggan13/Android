@@ -3,7 +3,6 @@ package com.yunda.safe.plct.service
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import androidx.annotation.Nullable
 import com.yunda.safe.plct.MainActivity
 import java.util.Timer
 import java.util.TimerTask
@@ -45,7 +44,6 @@ class BootService : Service() {
         super.onDestroy()
     }
 
-    @Nullable
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
