@@ -2,7 +2,7 @@ package com.example.zhangliang.videonews.api;
 
 public class ApiConfig {
     public static final int PAGE_SIZE = 5;
-    public static final String BASE_URl = "http://10.60.0.179:8080";
+    public static final String BASE_URl = "http://10.60.0.66:8089";
     public static final String LOGIN = "/api/login"; //登录
     public static final String REGISTER = "/api/user";//注册
     public static final String USER_LIST = "/api/users";//注册

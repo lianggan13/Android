@@ -9,13 +9,10 @@ import com.yunda.safe.plct.MainActivity
 
 class BootReceiver : BroadcastReceiver() {
 
-    private val TAG = "BootReceiver";
-
     override fun onReceive(context: Context, intent: Intent) {
-        XLog.i("$TAG:onReceived")
-        Toast.makeText(context, "Boot Complete", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, "System boot completed", Toast.LENGTH_LONG).show()
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            XLog.i("$TAG:system boot completed")
+            XLog.i("System boot completed")
 
             val intent = Intent(context, MainActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

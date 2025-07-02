@@ -4,7 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.yunda.safe.plct.common.StringConstants
+import com.yunda.safe.plct.common.ACTION_REFRESH_WEBVIEW
 import org.threeten.bp.LocalTime
 import java.util.Calendar
 
@@ -13,7 +13,7 @@ class AlarmService() {
         fun setAlarm(context: Context, time: LocalTime) {
 
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val intent = Intent(StringConstants.ACTION_REFRESH_WEBVIEW).apply {}
+            val intent = Intent(ACTION_REFRESH_WEBVIEW).apply {}
             val pendingIntent =
                 PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
@@ -39,7 +39,7 @@ class AlarmService() {
         }
 
         fun cancelAlarm(context: Context) {
-            val intent = Intent(StringConstants.ACTION_REFRESH_WEBVIEW).apply {}
+            val intent = Intent(ACTION_REFRESH_WEBVIEW).apply {}
             val pendingIntent =
                 PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

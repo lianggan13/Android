@@ -26,7 +26,13 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
-    <string name="notification_channel_name">FlickrFetchr</string>
-    <string name="new_pictures_title">New PhotoGallery Pictures</string>
-    <string name="new_pictures_text">You have new pictures inPhotoGallery.</string>
+    <string name="downloading">下载中...</string>
+    <string name="download_success">下载完成</string>
+    <string name="download_failed">下载失败</string>
+    <string name="download_paused">暂停下载</string>
+    <string name="download_cancel">取消下载</string>
+
+    <string name="ready_install">准备安装</string>
+
+
 </resources>

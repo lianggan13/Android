@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">VideoProjects</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Zhang Liang</string>
+    <string name="nav_header_subtitle">15694047739 &#10; 676021630@qq.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">设置</string>
+
+    <string name="menu_home">自我介绍</string>
+    <string name="menu_gallery">项目描述</string>
+    <string name="menu_slideshow">工作记录</string>
+</resources>

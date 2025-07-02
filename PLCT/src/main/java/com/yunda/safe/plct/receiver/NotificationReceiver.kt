@@ -10,7 +10,6 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import com.elvishew.xlog.XLog
-import com.yunda.safe.plct.common.StringConstants
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -19,9 +18,9 @@ class NotificationReceiver : BroadcastReceiver() {
             // A foreground activity canceled the broadcast
             return
         }
-        val requestCode = intent.getIntExtra(StringConstants.REQUEST_CODE, 0)
+        val requestCode = intent.getIntExtra("REQUEST_CODE", 0)
         val notification: Notification? =
-            intent.getParcelableExtra(StringConstants.NOTIFICATION)
+            intent.getParcelableExtra("NOTIFICATION")
         val notificationManager = NotificationManagerCompat.from(context)
         if (ActivityCompat.checkSelfPermission(
                 context,

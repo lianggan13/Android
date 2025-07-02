@@ -1,4 +1,4 @@
-package com.example.zhangliang.videonews.view;
+package com.example.zhangliang.videoprojects.util;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;

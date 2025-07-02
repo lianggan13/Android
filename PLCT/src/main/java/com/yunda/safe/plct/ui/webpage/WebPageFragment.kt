@@ -30,6 +30,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.AutoCompleteTextView
+import android.widget.PopupMenu
 import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -42,12 +43,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.elvishew.xlog.XLog
 import com.yunda.safe.plct.R
 import com.yunda.safe.plct.adapter.WebUriAdapter
-import com.yunda.safe.plct.common.StringConstants
+import com.yunda.safe.plct.common.ACTION_SHOW_SHOW_NOTIFICATION
+import com.yunda.safe.plct.common.APK_VERSION
+import com.yunda.safe.plct.common.PERMISSION_PRIVATE
 import com.yunda.safe.plct.data.ApkVersion
 import com.yunda.safe.plct.database.entity.WebUri
 import com.yunda.safe.plct.databinding.FragmentWebPageBinding
@@ -59,6 +64,10 @@ import com.yunda.safe.plct.utility.Keyboard
 
 class WebPageFragment : Fragment(), View.OnClickListener {
     private var _binding: FragmentWebPageBinding? = null
+
+    private val navController: NavController by lazy {
+        findNavController()
+    }
 
     private lateinit var searchBox: AutoCompleteTextView
     private lateinit var recyclerView: RecyclerView
@@ -73,10 +82,10 @@ class WebPageFragment : Fragment(), View.OnClickListener {
     private val mReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
             val apkVersion =
-                intent.getSerializableExtra(StringConstants.APK_VERSION) as? ApkVersion
+                intent.getSerializableExtra(APK_VERSION) as? ApkVersion
             Toast.makeText(
                 requireContext(),
-                "Got a broadcast: ${intent.action}, version: ${apkVersion?.version}",
+                "Received broadcast: ${intent.action}, version: ${apkVersion?.version}",
                 Toast.LENGTH_LONG
             ).show()
 
@@ -84,15 +93,6 @@ class WebPageFragment : Fragment(), View.OnClickListener {
                 .setTitle("版本更新")
                 .setMessage("检测到新版本，是否立即更新？")
                 .setPositiveButton("更新") { _, _ ->
-                    // 执行下载和安装
-//                    val apkUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", apkFile)
-//                    val installIntent = Intent(Intent.ACTION_VIEW).apply {
-//                        setDataAndType(apkUri, "application/vnd.android.package-archive")
-//                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-//                    }
-//                    context.startActivity(installIntent)
-//                String url = "https://raw.githubusercontent.com/guolindev/eclipse/master/eclipse-inst-win64.exe";
-//                    val url = "http://10.60.0.179:8080/api/video/download/WenS2.mp4";
                     val url = apkVersion?.apk
                     downloadBinder?.startDownload(url);
                 }
@@ -102,16 +102,12 @@ class WebPageFragment : Fragment(), View.OnClickListener {
                 .setCancelable(false)
                 .show()
 
-            //有序广播
-            //修改Intent中的数据。同时也可以修改 resultData（setResult(Int, String?, Bundle?)）
-            //  或者 setResultExtras
-            //默认情况下，发送成功 resultCode 会设置为 Activity.RESULT_OK,然后继续发送给下一个
-            //resultCode 设置为Activity.RESULT_CANCELED 之后，后面的接收者则无法接收到该广播
+            XLog.i("Received broadcast: ${intent.action}, version: ${apkVersion?.version}")
             resultCode = Activity.RESULT_CANCELED
         }
     }
 
-    private val mFilter: IntentFilter = IntentFilter(StringConstants.ACTION_SHOW_SHOW_NOTIFICATION)
+    private val mFilter: IntentFilter = IntentFilter(ACTION_SHOW_SHOW_NOTIFICATION)
 
     private val mLifecycleObserver = object : DefaultLifecycleObserver {
 
@@ -121,7 +117,7 @@ class WebPageFragment : Fragment(), View.OnClickListener {
             requireActivity().registerReceiver(
                 mReceiver,
                 mFilter,
-                StringConstants.PERMISSION_PRIVATE,
+                PERMISSION_PRIVATE,
                 null
             )
 
@@ -159,7 +155,7 @@ class WebPageFragment : Fragment(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        var uri = arguments?.getParcelable(StringConstants.WEB_URI) ?: Uri.EMPTY
+//        var uri = arguments?.getParcelable(WEB_URI) ?: Uri.EMPTY
         lifecycle.addObserver(mLifecycleObserver)
 
         val activity = requireActivity()
@@ -252,6 +248,28 @@ class WebPageFragment : Fragment(), View.OnClickListener {
             commitUri()
         }
 
+        binding.btnSetting.setOnClickListener { view ->
+            val popupMenu = PopupMenu(requireContext(), binding.btnSetting)
+            popupMenu.menu.add("设置")
+            // 你可以继续添加更多菜单项
+            popupMenu.setOnMenuItemClickListener { item ->
+                if (item.title == "设置") {
+                    // parentFragmentManager.beginTransaction()
+                    //     .replace(R.id.nav_host_fragment, SettingFragment())
+                    //     .addToBackStack(null)
+                    //     .commit()
+//                    findNavController().navigate(R.id.action_webPageFragment_to_settingFragment)
+//                    requireParentFragment().findNavController()
+//                        .navigate(R.id.action_webPageFragment_to_settingFragment)
+                    navController.navigate(R.id.action_webPageFragment_to_settingFragment)
+                    true
+                } else {
+                    false
+                }
+            }
+            popupMenu.show()
+        }
+
         recyclerView = RecyclerView(requireContext()).apply {
             setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
         }
@@ -265,7 +283,7 @@ class WebPageFragment : Fragment(), View.OnClickListener {
                 popupWindow.dismiss()
             }
             setOnItemChildClickListener { itemToRemove ->
-                val webUri = viewModel.GetWebUri(itemToRemove)
+                val webUri = viewModel.getWebUri(itemToRemove)
                 if (webUri != null)
                     viewModel.deleteWebUri(webUri)
             }
@@ -384,7 +402,7 @@ class WebPageFragment : Fragment(), View.OnClickListener {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-//        outState.putParcelable(StringConstants.WEB_URI, mUri)
+//        outState.putParcelable(WEB_URI, mUri)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {

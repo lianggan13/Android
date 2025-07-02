@@ -9,6 +9,7 @@ import java.io.File
 import java.io.InputStream
 import java.io.RandomAccessFile
 
+@Deprecated("see [DownloadCoroutine]")
 class DownloadTask(private val listener: DownloadListener) : AsyncTask<String, Int, Int>() {
 
     companion object {

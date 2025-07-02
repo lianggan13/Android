@@ -11,7 +11,7 @@ object Preferences {
         sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
     }
 
-    fun saveString(key: String, value: String) {
+    fun saveString(key: String, value: String?) {
         with(sharedPreferences.edit()) {
             putString(key, value)
             apply()

@@ -1,6 +1,5 @@
 package com.example.zhangliang.videonews.fragment;
 
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -13,18 +12,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.zhangliang.videonews.R;
-import com.example.zhangliang.videonews.activity.WebActivity;
-import com.example.zhangliang.videonews.adapter.CardViewAdapter;
 import com.example.zhangliang.videonews.adapter.NewsAdapter;
 import com.example.zhangliang.videonews.api.Api;
 import com.example.zhangliang.videonews.api.ApiConfig;
 import com.example.zhangliang.videonews.api.HttpCallback;
 import com.example.zhangliang.videonews.database.MysqlSeed;
-import com.example.zhangliang.videonews.entity.CategoryEntity;
 import com.example.zhangliang.videonews.entity.NewsEntity;
 import com.example.zhangliang.videonews.entity.NewsListResponse;
 import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.gson.Gson;
 import com.scwang.smart.refresh.layout.api.RefreshLayout;
 import com.scwang.smart.refresh.layout.listener.OnLoadMoreListener;
@@ -136,14 +131,16 @@ public class NewsFragment extends BaseFragment {
         newsAdapter.setOnItemClickListener(new NewsAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Serializable obj) {
-//                showToast("点击");
                 NewsEntity newsEntity = (NewsEntity) obj;
-//                String url = "http://192.168.31.32:8089/newsDetail?title=" + newsEntity.getAuthorName();
-                String url = "http://10.60.0.66:82";
-//                String url = "http://10.60.0.179:8080/api/users";
-                Bundle bundle = new Bundle();
-                bundle.putString("url", url);
-                navigateToWithBundle(WebActivity.class, bundle);
+                showToast(newsEntity.getHeaderUrl());
+
+                return;
+                //  String url = "http://192.168.31.32:8089/newsDetail?title=" + newsEntity.getAuthorName();
+                //  String url = "http://10.60.0.66:82";
+                //  String url = "http://10.60.0.179:8080/api/users";
+                //  Bundle bundle = new Bundle();
+                //  bundle.putString("url", url);
+                //  navigateToWithBundle(WebActivity.class, bundle);
             }
         });
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
@@ -164,6 +161,42 @@ public class NewsFragment extends BaseFragment {
         });
 //        getNewsList(true);
         getNewsListByLocal(true);
+    }
+
+    private void getNewsListByLocal(final boolean isRefresh) {
+        try {
+            if (isRefresh) {
+                refreshLayout.finishRefresh(true);
+            } else {
+                refreshLayout.finishLoadMore(true);
+            }
+
+            var videolist = MysqlSeed.loadLocalNews();
+            if (videolist != null && (long) videolist.size() > 0) {
+                List<NewsEntity> list = MysqlSeed.paginateNews(videolist, pageNum, ApiConfig.PAGE_SIZE);
+                if (list != null && list.size() > 0) {
+                    if (isRefresh) {
+                        datas = list;
+                    } else {
+                        datas.addAll(list);
+                    }
+                    mHandler.sendEmptyMessage(0);
+                } else {
+                    if (isRefresh) {
+                        showToast("暂时无数据");
+                    } else {
+                        showToast("没有更多数据");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e("NewsFragment", e.getMessage(), e);
+            if (isRefresh) {
+                refreshLayout.finishRefresh(true);
+            } else {
+                refreshLayout.finishLoadMore(true);
+            }
+        }
     }
 
     private void getNewsList(final boolean isRefresh) {
@@ -209,74 +242,4 @@ public class NewsFragment extends BaseFragment {
         });
     }
 
-    private void getNewsListByLocal(final boolean isRefresh) {
-        try {
-            if (isRefresh) {
-                refreshLayout.finishRefresh(true);
-            } else {
-                refreshLayout.finishLoadMore(true);
-            }
-
-            var videolist = MysqlSeed.loadLocalNews();
-            if (videolist != null && (long) videolist.size() > 0) {
-                List<NewsEntity> list = MysqlSeed.paginateNews(videolist, pageNum, ApiConfig.PAGE_SIZE);
-                if (list != null && list.size() > 0) {
-                    if (isRefresh) {
-                        datas = list;
-                    } else {
-                        datas.addAll(list);
-                    }
-                    mHandler.sendEmptyMessage(0);
-                } else {
-                    if (isRefresh) {
-                        showToast("暂时无数据");
-                    } else {
-                        showToast("没有更多数据");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e("NewsFragment", e.getMessage(), e);
-            if (isRefresh) {
-                refreshLayout.finishRefresh(true);
-            } else {
-                refreshLayout.finishLoadMore(true);
-            }
-        }
-    }
-
-
-    private void getVideoCategoryListByLocal() {
-        List<CategoryEntity> list = new ArrayList<>();
-
-        list.add(createCategory(1, "游戏"));
-        list.add(createCategory(2, "音乐"));
-        list.add(createCategory(3, "美食"));
-        list.add(createCategory(4, "农人"));
-        list.add(createCategory(5, "vlog"));
-        list.add(createCategory(6, "搞笑"));
-        list.add(createCategory(7, "宠物"));
-        list.add(createCategory(8, "军事"));
-
-        if (list != null && list.size() > 0) {
-            mTitles = new String[list.size()];
-            for (int i = 0; i < list.size(); i++) {
-                mTitles[i] = list.get(i).getCategoryName();
-                mFragments.add(VideoFragment.newInstance(list.get(i).getCategoryId()));
-//                mFragments.add(Video2Fragment.newInstance(list.get(i).getCategoryId()));
-            }
-            viewPager2.setOffscreenPageLimit(mFragments.size());
-            viewPager2.setAdapter(new CardViewAdapter(getActivity(), mTitles, mFragments));
-            new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> {
-                tab.setText(mTitles[position]);
-            }).attach();
-        }
-    }
-
-    private CategoryEntity createCategory(int id, String name) {
-        CategoryEntity category = new CategoryEntity();
-        category.setCategoryId(id);
-        category.setCategoryName(name);
-        return category;
-    }
 }
