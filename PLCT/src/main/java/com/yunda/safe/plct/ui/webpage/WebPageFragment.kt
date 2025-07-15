@@ -27,6 +27,7 @@ import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.AutoCompleteTextView
@@ -245,7 +246,17 @@ class WebPageFragment : Fragment(), View.OnClickListener {
         }
 
         binding.btnSearch.setOnClickListener {
-            commitUri()
+            val uri = searchBox.text.toString()
+            val currentUri = viewModel.uri.value?.toString() ?: ""
+            if (uri.isNotEmpty()) {
+                if (uri == currentUri) {
+                    // Uri 相同，强制刷新 WebView
+                    webView.reload()
+                } else {
+                    // Uri 不同，正常提交
+                    commitUri()
+                }
+            }
         }
 
         binding.btnSetting.setOnClickListener { view ->
@@ -254,14 +265,7 @@ class WebPageFragment : Fragment(), View.OnClickListener {
             // 你可以继续添加更多菜单项
             popupMenu.setOnMenuItemClickListener { item ->
                 if (item.title == "设置") {
-                    // parentFragmentManager.beginTransaction()
-                    //     .replace(R.id.nav_host_fragment, SettingFragment())
-                    //     .addToBackStack(null)
-                    //     .commit()
-//                    findNavController().navigate(R.id.action_webPageFragment_to_settingFragment)
-//                    requireParentFragment().findNavController()
-//                        .navigate(R.id.action_webPageFragment_to_settingFragment)
-                    navController.navigate(R.id.action_webPageFragment_to_settingFragment)
+//                    navController.navigate(R.id.action_webPageFragment_to_settingFragment)
                     true
                 } else {
                     false
@@ -301,7 +305,15 @@ class WebPageFragment : Fragment(), View.OnClickListener {
     private fun initWebView() {
         val progressBar = binding.progressHorizontal
         webView = binding.webView
-        webView.settings.javaScriptEnabled = true
+        val settings = webView.settings
+        settings.javaScriptEnabled = true
+        settings.domStorageEnabled = true
+        settings.allowFileAccess = true
+        settings.allowContentAccess = true
+        settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW // 允许混合内容
+        settings.userAgentString =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" // 伪装PC UA
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         webView.webViewClient = object : WebViewClient() {
             @SuppressLint("WebViewClientOnReceivedSslError")
             override fun onReceivedSslError(

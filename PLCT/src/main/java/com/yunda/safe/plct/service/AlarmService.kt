@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import com.yunda.safe.plct.common.ACTION_REFRESH_WEBVIEW
 import org.threeten.bp.LocalTime
 import java.util.Calendar
@@ -14,8 +15,18 @@ class AlarmService() {
 
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val intent = Intent(ACTION_REFRESH_WEBVIEW).apply {}
+            val flag =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                else
+                    PendingIntent.FLAG_UPDATE_CURRENT
             val pendingIntent =
-                PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                PendingIntent.getBroadcast(
+                    context,
+                    0,
+                    intent,
+                    flag
+                )
 
             val calendar = Calendar.getInstance().apply {
                 timeInMillis = System.currentTimeMillis()
@@ -40,8 +51,18 @@ class AlarmService() {
 
         fun cancelAlarm(context: Context) {
             val intent = Intent(ACTION_REFRESH_WEBVIEW).apply {}
+            val flag =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                else
+                    PendingIntent.FLAG_UPDATE_CURRENT
             val pendingIntent =
-                PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                PendingIntent.getBroadcast(
+                    context,
+                    0,
+                    intent,
+                    flag
+                )
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.cancel(pendingIntent)
         }

@@ -37,6 +37,20 @@
         android:hint="请输入服务器地址，如: http://192.168.1.100:8080"
         android:inputType="textUri" />
 
+    <TextView
+        style="?android:listSeparatorTextViewStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="浏览器主页(注: 必须是 Edge浏览器)" />
+
+    <EditText
+        android:id="@+id/etBrowserHomepage"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:hint="请输入浏览器主页地址，如: http://10.60.0.190:9291/#/position/7"
+        android:inputType="textUri" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
