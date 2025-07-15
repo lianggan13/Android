@@ -33,6 +33,7 @@
     <string name="download_cancel">取消下载</string>
 
     <string name="ready_install">准备安装</string>
+    <string name="accessibility_service_description">accessibility_service_description</string>
 
 
 </resources>

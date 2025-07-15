@@ -10,4 +10,6 @@ const val APK_VERSION = "APK_VERSION"
 const val DEFAULT_SOFTWARE_VERSION = "v0.0.0.0"
 const val SERVER_HOST = "SERVER_HOST"
 const val DEFAULT_SERVER_HOST = "http://127.0.0.1:9291"
+const val BROWSER_HOMEPAGE = "BROWSER_HOMEPAGE"
+const val DEFAULT_BROWSER_HOMEPAGE = "http://10.60.0.190:9291/#/position/7"
 

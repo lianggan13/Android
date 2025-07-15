@@ -81,7 +81,13 @@ class JsWebActivity : AppCompatActivity(), View.OnClickListener {
             "WebViewJavascriptBridge"
         )
         webView.setGson(Gson())
+        webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true
+
         webView.loadUrl("file:///android_asset/demo.html")
+//        webView.loadUrl(
+//            "http://10.60.0.35/"
+//        )
 
         val user = User()
         val location = Location()

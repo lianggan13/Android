@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -64,9 +65,10 @@ class App : Application() {
         PollWorker.start(this@App)
 
 //        PollService.start(this@App)
-        Preferences.saveString(APK_VERSION, versionName);
-    }
+        Preferences.saveString(APK_VERSION, versionName)
+     }
 
+   
     override fun onTerminate() {
         super.onTerminate()
 
