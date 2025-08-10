@@ -41,7 +41,7 @@
         style="?android:listSeparatorTextViewStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="浏览器主页(注: 必须是 Edge浏览器)" />
+        android:text="浏览器主页(注: 必须是 Edge 浏览器)" />
 
     <EditText
         android:id="@+id/etBrowserHomepage"

@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,6 +22,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import xyz.doikki.videocontroller.component.PrepareView;
+
 /**
  * @author: wei
  * @date: 2020-06-27
@@ -30,6 +33,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
     private List<NewsEntity> datas;
     private OnItemClickListener mOnItemClickListener;
+    private OnItemChildClickListener mOnItemChildClickListener;
 
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         mOnItemClickListener = onItemClickListener;
@@ -115,6 +119,8 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (newsEntity.getThumbEntities() != null && !newsEntity.getThumbEntities().isEmpty()) {
                 imageLoader.load(newsEntity.getThumbEntities().get(0).getThumbUrl(), vh.thumb);
             }
+
+            vh.mPosition = position;
         }
     }
 
@@ -181,7 +187,7 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    public class ViewHolderThree extends RecyclerView.ViewHolder {
+    public class ViewHolderThree extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView title;
         private TextView author;
         private TextView comment;
@@ -189,6 +195,9 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private ImageView header;
         private ImageView thumb;
         private NewsEntity newsEntity;
+        public PrepareView mPrepareView;
+        public FrameLayout mPlayerContainer;
+        public int mPosition;
 
         public ViewHolderThree(@NonNull View view) {
             super(view);
@@ -198,17 +207,38 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             time = view.findViewById(R.id.time);
             header = view.findViewById(R.id.header);
             thumb = view.findViewById(R.id.thumb);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mOnItemClickListener.onItemClick(newsEntity);
+            mPlayerContainer = view.findViewById(R.id.player_container);
+            mPrepareView = view.findViewById(R.id.prepare_view);
+
+//            view.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    mOnItemClickListener.onItemClick(newsEntity);
+//                }
+//            });
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (v.getId() == R.id.player_container) {
+                if (mOnItemChildClickListener != null) {
+                    mOnItemChildClickListener.onItemChildClick(mPosition);
                 }
-            });
+            } else {
+                if (mOnItemClickListener != null) {
+                    mOnItemClickListener.onItemClick(mPosition);
+                }
+            }
+
         }
     }
 
     public interface OnItemClickListener {
         void onItemClick(Serializable obj);
+    }
+
+    public interface OnItemChildClickListener {
+        void onItemChildClick(int position);
     }
 
     // 新增工具类，建议写成内部类或单独文件

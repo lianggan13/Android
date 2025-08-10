@@ -1,10 +1,12 @@
-package com.example.zhangliang.videoprojects.ui.home;
+package com.example.zhangliang.videoprojects.ui.project;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.zhangliang.videoprojects.R;
 import com.example.zhangliang.videoprojects.adapter.NewsAdapter;
 import com.example.zhangliang.videoprojects.database.MysqlSeed;
 import com.example.zhangliang.videoprojects.databinding.FragmentHomeBinding;
@@ -26,6 +29,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import xyz.doikki.videoplayer.player.VideoView;
+
 public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
@@ -33,8 +38,13 @@ public class HomeFragment extends Fragment {
     private RefreshLayout refreshLayout;
     private NewsAdapter newsAdapter;
     private int pageNum = 1;
-
     private HomeViewModel homeViewModel;
+
+    protected VideoView mVideoView;
+    /**
+     * 当前播放的位置
+     */
+    protected int mCurPos = -1;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -70,6 +80,22 @@ public class HomeFragment extends Fragment {
         recyclerView.setLayoutManager(linearLayoutManager);
         newsAdapter = new NewsAdapter(getActivity());
         recyclerView.setAdapter(newsAdapter);
+        recyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(@NonNull View view) {
+
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(@NonNull View view) {
+                FrameLayout playerContainer = view.findViewById(R.id.player_container);
+                View v = playerContainer.getChildAt(0);
+                if (v != null && v == mVideoView && !mVideoView.isFullScreen()) {
+                    releaseVideoView();
+                }
+            }
+        });
+
         newsAdapter.setOnItemClickListener(new NewsAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Serializable obj) {
@@ -100,6 +126,18 @@ public class HomeFragment extends Fragment {
             }
         });
         getNewsListByLocal(true);
+    }
+
+    private void releaseVideoView() {
+        if (mVideoView == null) return;
+        mVideoView.release();
+        if (mVideoView.isFullScreen()) {
+            mVideoView.stopFullScreen();
+        }
+        if (getActivity().getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+        mCurPos = -1;
     }
 
     private void getNewsListByLocal(final boolean isRefresh) {

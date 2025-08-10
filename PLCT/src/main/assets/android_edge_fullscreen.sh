@@ -10,7 +10,7 @@ EDGE_ACTIVITY="com.microsoft.ruby.Main"
 
 # 等待页面加载
 echo "[1/3] 等待页面加载完成..."
-sleep 3
+sleep 2
 
 # 获取屏幕分辨率并模拟点击
 echo "[2/3] 模拟用户交互触发全屏..."

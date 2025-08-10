@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="263dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#ffffff">
 
     <LinearLayout
@@ -19,13 +20,29 @@
             android:textColor="#222222"
             android:textSize="16sp" />
 
-        <ImageView
-            android:id="@+id/thumb"
+        <!--        <ImageView-->
+        <!--            android:id="@+id/thumb"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="190dp"-->
+        <!--            android:layout_marginTop="7dp"-->
+        <!--            android:scaleType="fitXY"-->
+        <!--            android:src="@mipmap/news_bg" />-->
+
+        <FrameLayout
+            android:id="@+id/player_container"
             android:layout_width="match_parent"
-            android:layout_height="190dp"
-            android:layout_marginTop="7dp"
-            android:scaleType="fitXY"
-            android:src="@mipmap/news_bg" />
+            android:layout_height="187dp"
+            android:layout_marginTop="8dp"
+            android:background="@android:color/black"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <xyz.doikki.videocontroller.component.PrepareView
+                android:id="@+id/prepare_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
+
 
         <LinearLayout
             android:layout_width="wrap_content"
