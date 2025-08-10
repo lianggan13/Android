@@ -2,19 +2,10 @@ package com.yunda.safe.plct.ui.webpage
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.BroadcastReceiver
-import android.content.ComponentName
-import android.content.Context
-import android.content.Context.BIND_AUTO_CREATE
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.http.SslError
 import android.os.Bundle
-import android.os.IBinder
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.KeyEvent
@@ -42,8 +33,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -51,16 +40,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.elvishew.xlog.XLog
 import com.yunda.safe.plct.R
 import com.yunda.safe.plct.adapter.WebUriAdapter
-import com.yunda.safe.plct.common.ACTION_SHOW_SHOW_NOTIFICATION
-import com.yunda.safe.plct.common.APK_VERSION
-import com.yunda.safe.plct.common.PERMISSION_PRIVATE
-import com.yunda.safe.plct.data.ApkVersion
 import com.yunda.safe.plct.database.entity.WebUri
 import com.yunda.safe.plct.databinding.FragmentWebPageBinding
-import com.yunda.safe.plct.receiver.RefreshReceiver
-import com.yunda.safe.plct.service.AlarmService
-import com.yunda.safe.plct.service.DownloadService
-import com.yunda.safe.plct.utility.DateTime
 import com.yunda.safe.plct.utility.Keyboard
 
 class WebPageFragment : Fragment(), View.OnClickListener {
@@ -80,84 +61,9 @@ class WebPageFragment : Fragment(), View.OnClickListener {
 
     private val binding get() = _binding!!
 
-    private val mReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent) {
-            val apkVersion =
-                intent.getSerializableExtra(APK_VERSION) as? ApkVersion
-            Toast.makeText(
-                requireContext(),
-                "Received broadcast: ${intent.action}, version: ${apkVersion?.version}",
-                Toast.LENGTH_LONG
-            ).show()
-
-            AlertDialog.Builder(context!!)
-                .setTitle("版本更新")
-                .setMessage("检测到新版本，是否立即更新？")
-                .setPositiveButton("更新") { _, _ ->
-                    val url = apkVersion?.apk
-                    downloadBinder?.startDownload(url);
-                }
-                .setNegativeButton("取消") { _, _ ->
-                    val url = apkVersion?.apk
-                }
-                .setCancelable(false)
-                .show()
-
-            XLog.i("Received broadcast: ${intent.action}, version: ${apkVersion?.version}")
-            resultCode = Activity.RESULT_CANCELED
-        }
-    }
-
-    private val mFilter: IntentFilter = IntentFilter(ACTION_SHOW_SHOW_NOTIFICATION)
-
-    private val mLifecycleObserver = object : DefaultLifecycleObserver {
-
-        override fun onStart(owner: LifecycleOwner) {
-            super.onStart(owner)
-
-            requireActivity().registerReceiver(
-                mReceiver,
-                mFilter,
-                PERMISSION_PRIVATE,
-                null
-            )
-
-            RefreshReceiver.register(requireActivity()) { context, intent ->
-                requireActivity().runOnUiThread {
-                    XLog.i("Refreshing WebView")
-                    webView.reload()
-                }
-            }
-
-            AlarmService.setAlarm(requireContext(), DateTime.parseTime("14:40:30"))
-        }
-
-        override fun onStop(owner: LifecycleOwner) {
-            super.onStop(owner)
-
-            requireActivity().unregisterReceiver(mReceiver)
-
-            RefreshReceiver.unRegister(requireActivity())
-
-            AlarmService.cancelAlarm(requireContext())
-        }
-    }
-
-
-    private var downloadBinder: DownloadService.DownloadBinder? = null
-
-    private val connection = object : ServiceConnection {
-        override fun onServiceDisconnected(name: ComponentName?) {}
-
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            downloadBinder = service as DownloadService.DownloadBinder
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        var uri = arguments?.getParcelable(WEB_URI) ?: Uri.EMPTY
-        lifecycle.addObserver(mLifecycleObserver)
 
         val activity = requireActivity()
         activity.onBackPressedDispatcher.addCallback(
@@ -171,26 +77,7 @@ class WebPageFragment : Fragment(), View.OnClickListener {
                         requireActivity().onBackPressedDispatcher.onBackPressed() // 触发默认回退
                     }
                 }
-            })
-
-        val intent = Intent(activity, DownloadService::class.java)
-        activity.startService(intent) // 启动服务：保证 Service 一直在后台运行
-        activity.bindService(
-            intent,
-            connection,
-            BIND_AUTO_CREATE
-        ) // 绑定服务：让 Activity 与 Service 进行通信
-        if (ContextCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                activity,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                1
-            )
-        }
+            })   
     }
 
     override fun onCreateView(
@@ -456,8 +343,5 @@ class WebPageFragment : Fragment(), View.OnClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        lifecycle.removeObserver(mLifecycleObserver)
-
-        requireActivity().unbindService(connection)
     }
 }

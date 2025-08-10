@@ -1,25 +1,41 @@
 package com.yunda.safe.plct.ui.setting
 
-import android.app.ActivityOptions
+import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.ComponentName
+import android.content.Context
+import android.content.Context.BIND_AUTO_CREATE
 import android.content.Intent
-import android.net.Uri
+import android.content.IntentFilter
+import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.elvishew.xlog.XLog
+import com.yunda.safe.plct.common.ACTION_SHOW_SHOW_NOTIFICATION
 import com.yunda.safe.plct.common.APK_VERSION
 import com.yunda.safe.plct.common.BROWSER_HOMEPAGE
 import com.yunda.safe.plct.common.DEFAULT_BROWSER_HOMEPAGE
 import com.yunda.safe.plct.common.DEFAULT_SERVER_HOST
 import com.yunda.safe.plct.common.DEFAULT_SOFTWARE_VERSION
+import com.yunda.safe.plct.common.PERMISSION_PRIVATE
 import com.yunda.safe.plct.common.SERVER_HOST
+import com.yunda.safe.plct.data.ApkVersion
 import com.yunda.safe.plct.databinding.FragmentSettingBinding
+import com.yunda.safe.plct.receiver.RefreshReceiver
+import com.yunda.safe.plct.service.DownloadService
+import com.yunda.safe.plct.utility.BrowserLauncher
 import com.yunda.safe.plct.utility.Preferences
 
 
@@ -29,10 +45,101 @@ class SettingFragment : Fragment() {
     private var _binding: FragmentSettingBinding? = null
     private val binding get() = _binding!!
 
+    // 迁移的组件
+    private val mReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            val apkVersion = intent.getSerializableExtra(APK_VERSION) as? ApkVersion
+            Toast.makeText(
+                requireContext(),
+                "Received broadcast: ${intent.action}, version: ${apkVersion?.versionNo}",
+                Toast.LENGTH_LONG
+            ).show()
+
+            AlertDialog.Builder(context!!)
+                .setTitle("版本更新")
+                .setMessage("检测到新版本，是否立即更新？")
+                .setPositiveButton("更新") { _, _ ->
+                    val url = apkVersion?.filePath
+                    downloadBinder?.startDownload(url)
+                }
+                .setNegativeButton("取消") { _, _ ->
+                    // 取消操作
+                }
+                .setCancelable(false)
+                .show()
+
+            XLog.i("Received broadcast: ${intent.action}, version: ${apkVersion?.versionNo}")
+        }
+    }
+
+    private val mFilter: IntentFilter = IntentFilter(ACTION_SHOW_SHOW_NOTIFICATION)
+
+    private val mLifecycleObserver = object : DefaultLifecycleObserver {
+
+        override fun onStart(owner: LifecycleOwner) {
+            super.onStart(owner)
+
+            requireActivity().registerReceiver(
+                mReceiver,
+                mFilter,
+                PERMISSION_PRIVATE,
+                null
+            )
+
+            RefreshReceiver.register(requireActivity()) { context, intent ->
+                requireActivity().runOnUiThread {
+                    XLog.i("SettingFragment: Refresh signal received")
+                    // 在设置页面可以刷新配置或重新加载设置
+                    loadSettings()
+                }
+            }
+        }
+
+        override fun onStop(owner: LifecycleOwner) {
+            super.onStop(owner)
+
+            requireActivity().unregisterReceiver(mReceiver)
+            RefreshReceiver.unRegister(requireActivity())
+        }
+    }
+
+    private var downloadBinder: DownloadService.DownloadBinder? = null
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?) {}
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            downloadBinder = service as DownloadService.DownloadBinder
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // TODO: Use the ViewModel
+        // 添加生命周期观察者
+        lifecycle.addObserver(mLifecycleObserver)
+
+        // 启动和绑定下载服务
+        val activity = requireActivity()
+        val intent = Intent(activity, DownloadService::class.java)
+        activity.startService(intent) // 启动服务：保证 Service 一直在后台运行
+        activity.bindService(
+            intent,
+            connection,
+            BIND_AUTO_CREATE
+        ) // 绑定服务：让 Activity 与 Service 进行通信
+
+        if (ContextCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                1
+            )
+        }
     }
 
     override fun onCreateView(
@@ -78,7 +185,14 @@ class SettingFragment : Fragment() {
             (browserHomepage.startsWith("http://") || browserHomepage.startsWith("https://"))
         ) {
             XLog.i("Browser homepage loaded from settings: $browserHomepage")
-            launchEdgeBrowser(browserHomepage)
+            
+            return
+
+            BrowserLauncher.waitForWebsiteAndLaunch(
+                context = requireContext(),
+                url = browserHomepage,
+                showToast = true
+            )
         } else {
             XLog.w("Invalid browser homepage format in settings: $browserHomepage")
         }
@@ -130,8 +244,12 @@ class SettingFragment : Fragment() {
         Preferences.saveString(SERVER_HOST, serverHost)
         Preferences.saveString(BROWSER_HOMEPAGE, browserHomepage)
 
-        // 使用用户配置的浏览器主页启动 Edge 浏览器
-        launchEdgeBrowser(browserHomepage)
+        // 使用工具类启动浏览器
+        BrowserLauncher.waitForWebsiteAndLaunch(
+            context = requireContext(),
+            url = browserHomepage,
+            showToast = true
+        )
 
         Toast.makeText(requireContext(), "设置已保存", Toast.LENGTH_SHORT).show()
     }
@@ -145,264 +263,20 @@ class SettingFragment : Fragment() {
         Toast.makeText(requireContext(), "已重置为默认值", Toast.LENGTH_SHORT).show()
     }
 
-
-    private fun launchEdgeBrowser(url: String) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            intent.setPackage("com.microsoft.emmx") // Edge 浏览器包名
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-
-            // 创建启动选项
-            val options = ActivityOptions.makeBasic()
-
-            // 选项1：无动画启动（更快）
-            options.setLaunchDisplayId(0) // 主显示器
-
-            startActivity(intent, options.toBundle())
-
-            XLog.i("Successfully launched Edge browser with URL: $url")
-
-            // 延迟执行脚本，等待 Edge 启动完成
-            Handler(Looper.getMainLooper()).postDelayed({
-                executeFullscreenScript()
-            }, 3000)
-
-        } catch (e: Exception) {
-            XLog.e("Failed to launch any browser: ${e.message}", e)
-        }
-    }
-
-    private fun executeFullscreenScript() {
-        Thread {
-            try {
-                XLog.i("Starting to execute fullscreen script")
-
-                // 从 assets 读取脚本内容
-                val scriptContent = readScriptFromAssets()
-                val scriptPath = "/sdcard/android_edge_fullscreen.sh"
-
-                // 使用 cat 命令写入脚本文件，避免单引号问题
-                val writeProcess = Runtime.getRuntime().exec("su")
-                val writer = writeProcess.outputStream.bufferedWriter()
-                writer.write("cat > $scriptPath << 'EOF'\n")
-                writer.write(scriptContent)
-                writer.write("\nEOF\n")
-                writer.write("chmod +x $scriptPath\n")
-                writer.write("exit\n")
-                writer.flush()
-                writer.close()
-                writeProcess.waitFor()
-
-                // 执行脚本
-                val execProcess = Runtime.getRuntime().exec(arrayOf("su", "-c", "sh $scriptPath"))
-
-                // 读取输出
-                val output = execProcess.inputStream.bufferedReader().readText()
-                val error = execProcess.errorStream.bufferedReader().readText()
-
-                val exitCode = execProcess.waitFor()
-
-                XLog.i("Script execution completed with exit code: $exitCode")
-                XLog.i("Script output: $output")
-                if (error.isNotEmpty()) {
-                    XLog.w("Script error: $error")
-                }
-
-            } catch (e: Exception) {
-                XLog.e("Failed to execute script: ${e.message}", e)
-            }
-        }.start()
-    }
-
-    /**
-     * 获取屏幕分辨率
-     */
-    private fun getScreenSize(): Pair<Int, Int> {
-        return try {
-            val process = Runtime.getRuntime().exec("wm size")
-            val output = process.inputStream.bufferedReader().readText()
-            process.waitFor()
-
-            // 解析输出，例如："Physical size: 1920x1080"
-            val sizeRegex = """(\d+)x(\d+)""".toRegex()
-            val matchResult = sizeRegex.find(output)
-
-            if (matchResult != null) {
-                val width = matchResult.groupValues[1].toInt()
-                val height = matchResult.groupValues[2].toInt()
-                XLog.i("Screen size detected: ${width}x${height}")
-                Pair(width, height)
-            } else {
-                XLog.w("Could not parse screen size, using default")
-                Pair(1920, 1080) // 默认分辨率
-            }
-        } catch (e: Exception) {
-            XLog.w("Failed to get screen size: ${e.message}")
-            Pair(1920, 1080) // 默认分辨率
-        }
-    }
-
-    /**
-     * 从 assets 目录读取脚本文件内容并动态插入坐标点
-     */
-    private fun readScriptFromAssets(): String {
-        val originalScript =
-            requireActivity().assets.open("android_edge_fullscreen.sh").bufferedReader()
-                .use { reader ->
-                    reader.readText()
-                }
-        // 动态处理脚本内容，插入计算出的坐标点
-        val script = processScriptWithDynamicCoordinates(originalScript)
-        return script
-    }
-
-    /**
-     * 处理脚本内容，动态插入计算出的坐标点
-     */
-    private fun processScriptWithDynamicCoordinates(originalScript: String): String {
-        // 动态计算刷新按钮坐标点
-        val refreshButtonPoints = calcButtonCornerPoints(1800, 88, 25, 25)
-        val refreshCenterPoint = refreshButtonPoints[0]
-        val refreshLeftTopPoint = refreshButtonPoints[1]
-        val refreshRightTopPoint = refreshButtonPoints[2]
-        val refreshLeftBottomPoint = refreshButtonPoints[3]
-        val refreshRightBottomPoint = refreshButtonPoints[4]
-
-        // 动态计算全屏按钮坐标点
-        val fullscreenButtonPoints = calcButtonCornerPoints(1873, 156, 60, 32)
-        val fullscreenCenterPoint = fullscreenButtonPoints[0]
-        val fullscreenLeftTopPoint = fullscreenButtonPoints[1]
-        val fullscreenRightTopPoint = fullscreenButtonPoints[2]
-        val fullscreenLeftBottomPoint = fullscreenButtonPoints[3]
-        val fullscreenRightBottomPoint = fullscreenButtonPoints[4]
-
-        // 记录计算出的坐标点
-        // XLog.i("Dynamic coordinates calculated:")
-        // XLog.i("  Refresh Button:")
-        // XLog.i("    Center: (${refreshCenterPoint.first}, ${refreshCenterPoint.second})")
-        // XLog.i("    LeftTop: (${refreshLeftTopPoint.first}, ${refreshLeftTopPoint.second})")
-        // XLog.i("    RightTop: (${refreshRightTopPoint.first}, ${refreshRightTopPoint.second})")
-        // XLog.i("    LeftBottom: (${refreshLeftBottomPoint.first}, ${refreshLeftBottomPoint.second})")
-        // XLog.i("    RightBottom: (${refreshRightBottomPoint.first}, ${refreshRightBottomPoint.second})")
-
-        XLog.i("  Fullscreen Button:")
-        XLog.i("    Center: (${fullscreenCenterPoint.first}, ${fullscreenCenterPoint.second})")
-        XLog.i("    LeftTop: (${fullscreenLeftTopPoint.first}, ${fullscreenLeftTopPoint.second})")
-        XLog.i("    RightTop: (${fullscreenRightTopPoint.first}, ${fullscreenRightTopPoint.second})")
-        XLog.i("    LeftBottom: (${fullscreenLeftBottomPoint.first}, ${fullscreenLeftBottomPoint.second})")
-        XLog.i("    RightBottom: (${fullscreenRightBottomPoint.first}, ${fullscreenRightBottomPoint.second})")
-
-        // 构建动态的点击序列 - 先点击刷新按钮，再点击全屏按钮
-        val dynamicClickSequence = """
-        # echo "→ 点击刷新按钮中心 (${refreshCenterPoint.first}, ${refreshCenterPoint.second})..."
-        # input tap ${refreshCenterPoint.first} ${refreshCenterPoint.second}
-        # sleep 1
-
-        # echo "→ 点击刷新按钮左上角 (${refreshLeftTopPoint.first}, ${refreshLeftTopPoint.second})..."
-        # input tap ${refreshLeftTopPoint.first} ${refreshLeftTopPoint.second}
-        # sleep 1
-
-        # echo "→ 点击刷新按钮右上角 (${refreshRightTopPoint.first}, ${refreshRightTopPoint.second})..."
-        # input tap ${refreshRightTopPoint.first} ${refreshRightTopPoint.second}
-        # sleep 1
- 
-        # echo "→ 点击刷新按钮左下角 (${refreshLeftBottomPoint.first}, ${refreshLeftBottomPoint.second})..."
-        # input tap ${refreshLeftBottomPoint.first} ${refreshLeftBottomPoint.second}
-        # sleep 1
-
-        # echo "→ 点击刷新按钮右下角 (${refreshRightBottomPoint.first}, ${refreshRightBottomPoint.second})..."
-        # input tap ${refreshRightBottomPoint.first} ${refreshRightBottomPoint.second}
-        # sleep 2
- 
-        # echo "→ 等待页面刷新完成..."
-        # sleep 3
-
-        echo "→ 点击全屏按钮中心 (${fullscreenCenterPoint.first}, ${fullscreenCenterPoint.second})..."
-        input tap ${fullscreenCenterPoint.first} ${fullscreenCenterPoint.second}
-        sleep 1
-
-        # echo "→ 点击全屏按钮左上角 (${fullscreenLeftTopPoint.first}, ${fullscreenLeftTopPoint.second})..."
-        # input tap ${fullscreenLeftTopPoint.first} ${fullscreenLeftTopPoint.second}
-        # sleep 1
-
-        # echo "→ 点击全屏按钮右上角 (${fullscreenRightTopPoint.first}, ${fullscreenRightTopPoint.second})..."
-        # input tap ${fullscreenRightTopPoint.first} ${fullscreenRightTopPoint.second}
-        # sleep 1
- 
-        # echo "→ 点击全屏按钮左下角 (${fullscreenLeftBottomPoint.first}, ${fullscreenLeftBottomPoint.second})..."
-        # input tap ${fullscreenLeftBottomPoint.first} ${fullscreenLeftBottomPoint.second}
-        # sleep 1
- 
-        # echo "→ 点击全屏按钮右下角 (${fullscreenRightBottomPoint.first}, ${fullscreenRightBottomPoint.second})..."
-        # input tap ${fullscreenRightBottomPoint.first} ${fullscreenRightBottomPoint.second}
-        # sleep 1
-        """.trimIndent()
-
-        // 查找"模拟点击序列"标记并在其后插入动态坐标
-        val clickSequenceMarker = "# 模拟点击序列"
-        val insertPoint = originalScript.indexOf(clickSequenceMarker)
-
-        return if (insertPoint != -1) {
-            XLog.i("Found click sequence marker, inserting dynamic coordinates after it")
-            // 找到标记后的换行位置
-            val afterMarker = originalScript.indexOf('\n', insertPoint)
-            if (afterMarker != -1) {
-                // 在标记后插入动态点击序列
-                originalScript.substring(0, afterMarker + 1) +
-                        dynamicClickSequence + "\n\n" +
-                        originalScript.substring(afterMarker + 1)
-            } else {
-                // 如果没有找到换行，直接在标记后添加
-                originalScript.substring(0, insertPoint + clickSequenceMarker.length) +
-                        "\n" + dynamicClickSequence + "\n\n" +
-                        originalScript.substring(insertPoint + clickSequenceMarker.length)
-            }
-        } else {
-            // 如果没有找到模拟点击序列标记，尝试在空格键前插入
-            val keyboardInsertPoint = originalScript.indexOf("echo \"→ 尝试空格键...\"")
-            if (keyboardInsertPoint != -1) {
-                XLog.i("Click sequence marker not found, inserting before keyboard commands")
-                originalScript.substring(0, keyboardInsertPoint) +
-                        dynamicClickSequence + "\n\n" +
-                        originalScript.substring(keyboardInsertPoint)
-            } else {
-                // 如果都找不到，直接返回原脚本
-                XLog.w("Could not find insertion point, using original script")
-                originalScript
-            }
-        }
-    }
-
-    /**
-     * 计算按钮中心和四角坐标
-     * @param centerX 按钮中心X坐标
-     * @param centerY 按钮中心Y坐标
-     * @param width 按钮宽度
-     * @param height 按钮高度
-     * @param offsetRatio 偏移比例，默认0.25（即1/4）
-     * @return List<Pair<Int, Int>>，顺序为 center, leftTop, rightTop, leftBottom, rightBottom
-     */
-    fun calcButtonCornerPoints(
-        centerX: Int,
-        centerY: Int,
-        width: Int,
-        height: Int,
-        offsetRatio: Float = 0.25f
-    ): List<Pair<Int, Int>> {
-        val dx = (width * offsetRatio).toInt()
-        val dy = (height * offsetRatio).toInt()
-        return listOf(
-            Pair(centerX, centerY), // center
-            Pair(centerX - dx, centerY - dy), // leftTop
-            Pair(centerX + dx, centerY - dy), // rightTop
-            Pair(centerX - dx, centerY + dy), // leftBottom
-            Pair(centerX + dx, centerY + dy)  // rightBottom
-        )
+    override fun onStop() {
+        super.onStop()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        lifecycle.removeObserver(mLifecycleObserver)
+
+        // 解绑服务
+        try {
+            requireActivity().unbindService(connection)
+        } catch (e: Exception) {
+            XLog.w("Failed to unbind service: ${e.message}")
+        }
     }
 }

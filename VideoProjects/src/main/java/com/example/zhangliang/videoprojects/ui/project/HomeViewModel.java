@@ -1,4 +1,4 @@
-package com.example.zhangliang.videoprojects.ui.home;
+package com.example.zhangliang.videoprojects.ui.project;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

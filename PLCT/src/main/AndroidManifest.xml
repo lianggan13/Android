@@ -86,17 +86,14 @@
             </intent-filter>
         </receiver>
 
-        <!--        登记 NotificationReceiver 为 standalone receiver-->
         <receiver
-            android:name=".receiver.NotificationReceiver"
-            android:exported="false"
-            android:permission="${applicationId}.PRIVATE">
-
-            <!-- 最低的优先级，-999，而-1000是系统保留的值 -->
-            <intent-filter android:priority="-999">
+            android:name=".receiver.AppUpdateReceiver"
+            android:exported="false">
+            <intent-filter android:priority="1000">
                 <action android:name="${applicationId}.SHOW_NOTIFICATION" />
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>

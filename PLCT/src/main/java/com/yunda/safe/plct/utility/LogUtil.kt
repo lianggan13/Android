@@ -21,10 +21,10 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
-object Logger {
+object LogUtil {
 
     fun init(content: Context) {
-        // /storage/emulated/0/Android/data/com.yunda.safe.plct/files/logs/...
+        // /storage/emulated/0/Android/data/xxx/files/logs/...
         val logDir = File(content.getExternalFilesDir(null), "logs")
         if (!logDir.exists()) {
             logDir.mkdirs()
@@ -66,8 +66,10 @@ object Logger {
                     }
 
                     val timestamp = dateFormat.format(Date(timeMillis))
+                    val tagName = tag ?: "TAG"
                     val level = LogLevel.getShortLevelName(logLevel)
-                    return "$timestamp|$threadName|$level|${log}"
+
+                    return "$timestamp|$tagName|$threadName|$level|${log}"
                 }
             })
             .writer(SimpleWriter()) // 指定日志写入器，默认为 SimpleWriter
@@ -78,7 +80,7 @@ object Logger {
                 if (BuildConfig.DEBUG)
                     LogLevel.ALL
                 else
-                    LogLevel.NONE
+                    LogLevel.INFO
             )
             .tag(content.getString(R.string.app_name))
             .enableThreadInfo()
@@ -106,5 +108,4 @@ object Logger {
             filePrinter
         );
     }
-
 }

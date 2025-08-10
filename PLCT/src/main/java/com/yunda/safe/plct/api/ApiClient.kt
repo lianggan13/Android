@@ -9,32 +9,57 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    private val client = OkHttpClient()
+    private val defaultClient = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
+        .writeTimeout(10, TimeUnit.SECONDS)
+        .build()
+    
+    private fun getClient(timeoutSeconds: Int = 10): OkHttpClient {
+        if (timeoutSeconds == 10) {
+            return defaultClient
+        }
+        return OkHttpClient.Builder()
+            .connectTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
+            .readTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
+            .writeTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
+            .build()
+    }
 
-    fun get(url: String): Response? {
+    fun get(url: String, timeoutSeconds: Int = 10): Response? {
         val request = Request.Builder()
             .url(url)
             .build()
-        return client.newCall(request).execute()
+        return getClient(timeoutSeconds).newCall(request).execute()
     }
 
-    fun post(url: String, body: RequestBody): Response? {
+    fun post(url: String, body: RequestBody, timeoutSeconds: Int = 10): Response? {
         val request = Request.Builder()
             .url(url)
             .addHeader("contentType", "application/json;charset=UTF-8")
             .post(body)
             .build()
-        return client.newCall(request).execute()
+        return getClient(timeoutSeconds).newCall(request).execute()
     }
 
-    fun getAsync(url: String, callback: (Response?, Exception?) -> Unit) {
+    fun postSync(url: String, body: RequestBody, timeoutSeconds: Int = 10): Response? {
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("contentType", "application/json;charset=UTF-8")
+            .post(body)
+            .build()
+        return getClient(timeoutSeconds).newCall(request).execute()
+    }
+
+    fun getAsync(url: String, timeoutSeconds: Int = 10, callback: (Response?, Exception?) -> Unit) {
         val request = Request.Builder()
             .url(url)
             // .addHeader("token", token)
             .build()
-        client.newCall(request).enqueue(object : Callback {
+        getClient(timeoutSeconds).newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 callback(null, e)
             }
@@ -50,6 +75,7 @@ object ApiClient {
     fun postAsync(
         url: String,
         body: RequestBody,
+        timeoutSeconds: Int = 10,
         callback: (Response?, Exception?) -> Unit
     ) {
         val request = Request.Builder()
@@ -57,7 +83,7 @@ object ApiClient {
             .addHeader("contentType", "application/json;charset=UTF-8")
             .post(body)
             .build()
-        client.newCall(request).enqueue(object : Callback {
+        getClient(timeoutSeconds).newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 callback(null, e)
             }

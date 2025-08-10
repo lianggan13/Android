@@ -54,6 +54,10 @@ class MainActivity : AppCompatActivity() {
         return typedValue.data != 0
     }
 
+    override fun onStop() {
+        super.onStop()
+    }
+
     public override fun onDestroy() {
         super.onDestroy()
     }

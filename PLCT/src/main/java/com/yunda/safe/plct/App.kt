@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -14,7 +13,7 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 import com.yunda.safe.plct.common.APK_VERSION
 import com.yunda.safe.plct.database.AppRepository
 import com.yunda.safe.plct.handle.PollWorker
-import com.yunda.safe.plct.utility.Logger
+import com.yunda.safe.plct.utility.LogUtil
 import com.yunda.safe.plct.utility.Preferences
 
 
@@ -22,7 +21,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        Logger.init(this@App)
+        LogUtil.init(this@App)
 
         val pm = this.packageManager
         val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -54,7 +53,7 @@ class App : Application() {
             XLog.i("APK Signer: ${it.toCharsString()}")
         }
 
-//        Tester.testApi()
+        // Tester.testApi2()
 
         Thread.setDefaultUncaughtExceptionHandler(GlobalCrashHandler(this@App))
 
@@ -66,9 +65,9 @@ class App : Application() {
 
 //        PollService.start(this@App)
         Preferences.saveString(APK_VERSION, versionName)
-     }
+    }
 
-   
+
     override fun onTerminate() {
         super.onTerminate()
 
