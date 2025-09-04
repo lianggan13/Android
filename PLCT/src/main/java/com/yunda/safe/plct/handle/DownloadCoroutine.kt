@@ -68,9 +68,9 @@ class DownloadCoroutine(
             XLog.i("APK: $file")
             if (file.exists()) {
                 downloadedLength = file.length()
-                // TODO: for debug & test
-                file.delete()
-                downloadedLength = 0
+                // for debug & test
+                // file.delete()
+                // downloadedLength = 0
             }
 
             val contentLength = getContentLength(downloadUrl)
@@ -140,7 +140,7 @@ class DownloadCoroutine(
             .build()
         client.newCall(request).execute().use { response ->
             if (response.isSuccessful) {
-                val contentLengthStr = response.header("ContentLength")
+                val contentLengthStr = response.header("Content-Length")
                 return contentLengthStr?.toLongOrNull() ?: 0L
             }
         }

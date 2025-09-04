@@ -57,7 +57,7 @@ class SettingFragment : Fragment() {
 
             AlertDialog.Builder(context!!)
                 .setTitle("版本更新")
-                .setMessage("检测到新版本，是否立即更新？")
+                .setMessage("检测到新版本 ${apkVersion?.versionNo}，是否立即更新？")
                 .setPositiveButton("更新") { _, _ ->
                     val url = apkVersion?.filePath
                     downloadBinder?.startDownload(url)
@@ -185,9 +185,6 @@ class SettingFragment : Fragment() {
             (browserHomepage.startsWith("http://") || browserHomepage.startsWith("https://"))
         ) {
             XLog.i("Browser homepage loaded from settings: $browserHomepage")
-            
-            return
-
             BrowserLauncher.waitForWebsiteAndLaunch(
                 context = requireContext(),
                 url = browserHomepage,

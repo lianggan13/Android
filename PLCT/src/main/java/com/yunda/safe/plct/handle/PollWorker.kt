@@ -58,7 +58,6 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
     override fun doWork(): Result {
         try {
             XLog.i("[PollWorker] triggered...")
-
             // val browserHomepage = Preferences.getString(BROWSER_HOMEPAGE, DEFAULT_BROWSER_HOMEPAGE)
             // XLog.i("[PollWorker] Browser homepage: $browserHomepage")
 
@@ -68,7 +67,7 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
                 showToast = false  // 后台服务不显示Toast
             )
 
-            val baseUrl = Preferences.getString(
+            val host = Preferences.getString(
                 SERVER_HOST,
                 DEFAULT_SERVER_HOST
             )
@@ -81,7 +80,7 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
             )
 
             // 同步 NTP 服务时间
-            ApiClient.getAsync("$baseUrl${API.SYSTEM_TIME}") { response, error ->
+            ApiClient.getAsync("$host${API.SYSTEM_TIME}") { response, error ->
                 if (error != null) {
                     XLog.e("GET failed", error)
                     return@getAsync
@@ -89,7 +88,7 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
                 var result = response?.body?.string()?.replace("\"", "")?.trim()
                 if (result != null && result.isNotEmpty()) {
                     try {
-                        result = "2025-06-06 06:06:06"
+//                        result = "2025-06-06 06:06:06"
                         val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                         val date = sdf.parse(result)
                         var exitCode = DateTime.setSysDateTime(date)
@@ -101,9 +100,8 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
             }
 
             // 检查版本更新
-            //  val jsonBody = ApiClient.buildJsonBody(params)
             val jsonBody = ApiClient.buildFormBody(params)
-            val response = ApiClient.postSync("$baseUrl${API.APP_VERSION}", jsonBody, 10)
+            val response = ApiClient.postSync("$host${API.APP_VERSION}", jsonBody, 10)
             if (response == null || !response!!.isSuccessful) {
                 XLog.e("[PollWorker] POST request failed: HTTP ${response?.code}")
                 return Result.retry()
@@ -111,7 +109,7 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
 
             try {
                 val result = response.body?.string()
-                
+
                 XLog.i("[PollWorker] API Version response: $result")
 
                 val apkVersion = Gson().fromJson(result, ApkVersion::class.java)

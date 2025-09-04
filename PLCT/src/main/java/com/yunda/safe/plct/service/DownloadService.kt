@@ -142,7 +142,7 @@ class DownloadService : Service() {
                     startForeground(1, getNotification(getString(R.string.downloading), 0))
                     Toast.makeText(
                         this@DownloadService,
-                        getString(R.string.downloading),
+                        "${getString(R.string.downloading)} ${downloadUrl}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
