@@ -23,17 +23,13 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.elvishew.xlog.XLog
-import com.yunda.safe.plct.common.ACTION_SHOW_SHOW_NOTIFICATION
-import com.yunda.safe.plct.common.APK_VERSION
-import com.yunda.safe.plct.common.BROWSER_HOMEPAGE
-import com.yunda.safe.plct.common.DEFAULT_BROWSER_HOMEPAGE
-import com.yunda.safe.plct.common.DEFAULT_SERVER_HOST
-import com.yunda.safe.plct.common.DEFAULT_SOFTWARE_VERSION
-import com.yunda.safe.plct.common.PERMISSION_PRIVATE
-import com.yunda.safe.plct.common.SERVER_HOST
+import com.yunda.safe.plct.api.API
+import com.yunda.safe.plct.api.ApiClient
+import com.yunda.safe.plct.common.Constants
 import com.yunda.safe.plct.data.ApkVersion
 import com.yunda.safe.plct.databinding.FragmentSettingBinding
 import com.yunda.safe.plct.receiver.RefreshReceiver
+import com.yunda.safe.plct.service.AlarmService
 import com.yunda.safe.plct.service.DownloadService
 import com.yunda.safe.plct.utility.BrowserLauncher
 import com.yunda.safe.plct.utility.Preferences
@@ -45,10 +41,9 @@ class SettingFragment : Fragment() {
     private var _binding: FragmentSettingBinding? = null
     private val binding get() = _binding!!
 
-    // 迁移的组件
-    private val mReceiver = object : BroadcastReceiver() {
+    private val versionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
-            val apkVersion = intent.getSerializableExtra(APK_VERSION) as? ApkVersion
+            val apkVersion = intent.getSerializableExtra(Constants.APK_VERSION) as? ApkVersion
             Toast.makeText(
                 requireContext(),
                 "Received broadcast: ${intent.action}, version: ${apkVersion?.versionNo}",
@@ -72,34 +67,92 @@ class SettingFragment : Fragment() {
         }
     }
 
-    private val mFilter: IntentFilter = IntentFilter(ACTION_SHOW_SHOW_NOTIFICATION)
+    private val mFilter: IntentFilter = IntentFilter(Constants.ACTION_SHOW_SHOW_NOTIFICATION)
 
     private val mLifecycleObserver = object : DefaultLifecycleObserver {
 
-        override fun onStart(owner: LifecycleOwner) {
-            super.onStart(owner)
+        override fun onCreate(owner: LifecycleOwner) {
+            super.onCreate(owner)
 
             requireActivity().registerReceiver(
-                mReceiver,
+                versionReceiver,
                 mFilter,
-                PERMISSION_PRIVATE,
+                Constants.PERMISSION_PRIVATE,
                 null
             )
 
             RefreshReceiver.register(requireActivity()) { context, intent ->
                 requireActivity().runOnUiThread {
                     XLog.i("SettingFragment: Refresh signal received")
-                    // 在设置页面可以刷新配置或重新加载设置
                     loadSettings()
+                    timeoutReload()
                 }
             }
+
+            timeoutReload()
+        }
+
+        override fun onStart(owner: LifecycleOwner) {
+            super.onStart(owner)
         }
 
         override fun onStop(owner: LifecycleOwner) {
             super.onStop(owner)
+        }
 
-            requireActivity().unregisterReceiver(mReceiver)
+        override fun onDestroy(owner: LifecycleOwner) {
+            super.onDestroy(owner)
+            requireActivity().unregisterReceiver(versionReceiver)
             RefreshReceiver.unRegister(requireActivity())
+            AlarmService.cancelAlarm(requireActivity())
+        }
+
+        private fun timeoutReload() {
+            // 设置定时刷新浏览器网页
+            val url = "${Constants.Host}${API.SYSTEM_RST}"
+            ApiClient.postAsync(url, null, 10) { resp, error ->
+                if (error != null) {
+                    XLog.e("GET failed", error)
+                }
+                if (resp == null || !resp.isSuccessful) {
+                    XLog.e("GetByCode failed: ${resp?.code} ${resp?.message}")
+                }
+
+                try {
+                    val body = resp!!.body?.string().orEmpty()
+                    var timeStr =
+                        org.json.JSONObject(body).optString("value").replace("\"", "").trim()
+                    if (timeStr.isEmpty()) {
+                        XLog.e("value is empty in response: $body")
+                    }
+
+                    val today =
+                        java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                            .format(java.util.Date())
+                    val sdf =
+                        java.text.SimpleDateFormat(
+                            "yyyy-MM-dd HH:mm:ss",
+                            java.util.Locale.getDefault()
+                        )
+
+                    var restartDate = sdf.parse("$today $timeStr")
+
+
+                    if (restartDate == null) {
+                        XLog.w("parse failed: $today $timeStr")
+                    } else {
+                        if (restartDate.time <= System.currentTimeMillis()) {
+                            val cal = java.util.Calendar.getInstance()
+                            cal.time = restartDate
+                            cal.add(java.util.Calendar.DAY_OF_MONTH, 1)
+                            restartDate = cal.time
+                        }
+                        AlarmService.setAlarm(requireContext(), restartDate.time)
+                    }
+                } catch (e: Exception) {
+                    XLog.e("Error scheduling restart: ${e.message}", e)
+                }
+            }
         }
     }
 
@@ -171,9 +224,11 @@ class SettingFragment : Fragment() {
 
     private fun loadSettings() {
         // 从 SharedPreferences 加载设置
-        val softwareVersion = Preferences.getString(APK_VERSION, DEFAULT_SOFTWARE_VERSION)
-        val serverHost = Preferences.getString(SERVER_HOST, DEFAULT_SERVER_HOST)
-        val browserHomepage = Preferences.getString(BROWSER_HOMEPAGE, DEFAULT_BROWSER_HOMEPAGE)
+        val softwareVersion =
+            Preferences.getString(Constants.APK_VERSION, Constants.DEFAULT_SOFTWARE_VERSION)
+        val serverHost = Preferences.getString(Constants.SERVER_HOST, Constants.DEFAULT_SERVER_HOST)
+        val browserHomepage =
+            Preferences.getString(Constants.BROWSER_HOMEPAGE, Constants.DEFAULT_BROWSER_HOMEPAGE)
 
         // 设置到输入框
         binding.etSoftwareVersion.setText(softwareVersion)
@@ -237,9 +292,9 @@ class SettingFragment : Fragment() {
         }
 
         // 保存到 SharedPreferences
-        Preferences.saveString(APK_VERSION, softwareVersion)
-        Preferences.saveString(SERVER_HOST, serverHost)
-        Preferences.saveString(BROWSER_HOMEPAGE, browserHomepage)
+        Preferences.saveString(Constants.APK_VERSION, softwareVersion)
+        Preferences.saveString(Constants.SERVER_HOST, serverHost)
+        Preferences.saveString(Constants.BROWSER_HOMEPAGE, browserHomepage)
 
         // 使用工具类启动浏览器
         BrowserLauncher.waitForWebsiteAndLaunch(
@@ -254,8 +309,8 @@ class SettingFragment : Fragment() {
     private fun resetSettings() {
         // 重置为默认值
 //        binding.etSoftwareVersion.setText(DEFAULT_SOFTWARE_VERSION)
-        binding.etServerHost.setText(DEFAULT_SERVER_HOST)
-        binding.etBrowserHomepage.setText(DEFAULT_BROWSER_HOMEPAGE)
+        binding.etServerHost.setText(Constants.DEFAULT_SERVER_HOST)
+        binding.etBrowserHomepage.setText(Constants.DEFAULT_BROWSER_HOMEPAGE)
 
         Toast.makeText(requireContext(), "已重置为默认值", Toast.LENGTH_SHORT).show()
     }

@@ -15,16 +15,10 @@ import com.elvishew.xlog.XLog
 import com.google.gson.Gson
 import com.yunda.safe.plct.api.API
 import com.yunda.safe.plct.api.ApiClient
-import com.yunda.safe.plct.common.ACTION_SHOW_SHOW_NOTIFICATION
-import com.yunda.safe.plct.common.APK_VERSION
-import com.yunda.safe.plct.common.DEFAULT_SERVER_HOST
-import com.yunda.safe.plct.common.DEFAULT_SOFTWARE_VERSION
-import com.yunda.safe.plct.common.PERMISSION_PRIVATE
-import com.yunda.safe.plct.common.SERVER_HOST
+import com.yunda.safe.plct.common.Constants
 import com.yunda.safe.plct.data.ApkVersion
 import com.yunda.safe.plct.utility.BrowserLauncher
 import com.yunda.safe.plct.utility.DateTime
-import com.yunda.safe.plct.utility.Preferences
 import java.util.concurrent.TimeUnit
 
 class PollWorker(private val mContext: Context, workerParameters: WorkerParameters) :
@@ -67,20 +61,11 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
                 showToast = false  // 后台服务不显示Toast
             )
 
-            val host = Preferences.getString(
-                SERVER_HOST,
-                DEFAULT_SERVER_HOST
-            )
-            var version = Preferences.getString(
-                APK_VERSION,
-                DEFAULT_SOFTWARE_VERSION
-            )
-            val params = hashMapOf<String, Object>(
-                "type" to version as Object
-            )
 
-            // 同步 NTP 服务时间
-            ApiClient.getAsync("$host${API.SYSTEM_TIME}") { response, error ->
+    
+
+            // 同步服务时间
+            ApiClient.getAsync("${Constants.Host}${API.SYSTEM_TIME}") { response, error ->
                 if (error != null) {
                     XLog.e("GET failed", error)
                     return@getAsync
@@ -100,8 +85,11 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
             }
 
             // 检查版本更新
+            val params = hashMapOf<String, Object>(
+                "type" to Constants.Version as Object
+            )
             val jsonBody = ApiClient.buildFormBody(params)
-            val response = ApiClient.postSync("$host${API.APP_VERSION}", jsonBody, 10)
+            val response = ApiClient.postSync("${Constants.Host}${API.APP_VERSION}", jsonBody, 10)
             if (response == null || !response!!.isSuccessful) {
                 XLog.e("[PollWorker] POST request failed: HTTP ${response?.code}")
                 return Result.retry()
@@ -114,8 +102,8 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
 
                 val apkVersion = Gson().fromJson(result, ApkVersion::class.java)
                 if (apkVersion != null) {
-                    XLog.i("[PollWorker] Current version: $version, Server version: ${apkVersion.versionNo}")
-                    if (version != apkVersion.versionNo) {
+                    XLog.i("[PollWorker] Current version: ${Constants.Version} Server version: ${apkVersion.versionNo}")
+                    if (Constants.Version != apkVersion.versionNo) {
                         XLog.i("[PollWorker] New version detected, broadcasting update notification")
                         broadcast(mContext, apkVersion)
                     } else {
@@ -147,17 +135,17 @@ class PollWorker(private val mContext: Context, workerParameters: WorkerParamete
 
         // 使用 Handler 延迟发送广播，确保 Activity 已经启动
         Handler(Looper.getMainLooper()).postDelayed({
-            val intent = Intent(ACTION_SHOW_SHOW_NOTIFICATION).apply {
-                putExtra(APK_VERSION, apkVersion)
+            val intent = Intent(Constants.ACTION_SHOW_SHOW_NOTIFICATION).apply {
+                putExtra(Constants.APK_VERSION, apkVersion)
             }
 
             //  mContext.sendBroadcast(intent)
 
-            //发送 带权限限制 + 有序 的广播：
-            //1.阻⽌未授权的其它 App 监听和触发自己的 BroadcastReceiver
-            //2.解决 NotificationReceiver ⽆法在新版本系统上⼯作的问题
-            //3.根据优先级 保证 broadcast⼀次⼀个地投递给各个 receiver
-            context.sendOrderedBroadcast(intent, PERMISSION_PRIVATE)
+            // 发送 带权限限制 + 有序 的广播：
+            // 1.阻⽌未授权的其它 App 监听和触发自己的 BroadcastReceiver
+            // 2.解决 NotificationReceiver ⽆法在新版本系统上⼯作的问题
+            // 3.根据优先级 保证 broadcast⼀次⼀个地投递给各个 receiver
+            context.sendOrderedBroadcast(intent, Constants.PERMISSION_PRIVATE)
 
             XLog.i("[PollWorker] Update broadcast sent after bringing app to foreground")
         }, 800) // 延迟800ms确保Activity启动完成

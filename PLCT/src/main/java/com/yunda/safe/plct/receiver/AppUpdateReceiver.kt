@@ -10,16 +10,16 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.elvishew.xlog.XLog
 import com.yunda.safe.plct.MainActivity
-import com.yunda.safe.plct.common.ACTION_SHOW_SHOW_NOTIFICATION
-import com.yunda.safe.plct.common.APK_VERSION
+import com.yunda.safe.plct.common.Constants
+
 import com.yunda.safe.plct.data.ApkVersion
 
 class AppUpdateReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         return
 
-        if (intent.action == ACTION_SHOW_SHOW_NOTIFICATION) {
-            val apkVersion = intent.getSerializableExtra(APK_VERSION) as? ApkVersion
+        if (intent.action == Constants.ACTION_SHOW_SHOW_NOTIFICATION) {
+            val apkVersion = intent.getSerializableExtra(Constants.APK_VERSION) as? ApkVersion
 
             XLog.i("AppUpdateReceiver: Received update notification, version: ${apkVersion?.versionNo}")
 
@@ -53,7 +53,7 @@ class AppUpdateReceiver : BroadcastReceiver() {
         val mainIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("action", "show_update_dialog")
-            putExtra(APK_VERSION, apkVersion)
+            putExtra(Constants.APK_VERSION, apkVersion)
         }
 
         val pendingIntent = PendingIntent.getActivity(

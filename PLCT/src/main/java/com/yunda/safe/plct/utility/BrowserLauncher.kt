@@ -8,8 +8,8 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import com.elvishew.xlog.XLog
-import com.yunda.safe.plct.common.BROWSER_HOMEPAGE
-import com.yunda.safe.plct.common.DEFAULT_BROWSER_HOMEPAGE
+import com.yunda.safe.plct.common.Constants
+
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -468,7 +468,8 @@ object BrowserLauncher {
      */
     fun launchBrowserWithHomepage(context: Context, showToast: Boolean = true) {
         return
-        val browserHomepage = Preferences.getString(BROWSER_HOMEPAGE, DEFAULT_BROWSER_HOMEPAGE)
+        val browserHomepage =
+            Preferences.getString(Constants.BROWSER_HOMEPAGE, Constants.DEFAULT_BROWSER_HOMEPAGE)
 
         if (browserHomepage != null && browserHomepage.isNotEmpty() &&
             (browserHomepage.startsWith("http://") || browserHomepage.startsWith("https://"))

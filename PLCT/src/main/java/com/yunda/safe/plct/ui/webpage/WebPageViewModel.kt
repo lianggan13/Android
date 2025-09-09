@@ -3,7 +3,8 @@ package com.yunda.safe.plct.ui.webpage
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.yunda.safe.plct.common.WEB_URI
+import com.yunda.safe.plct.common.Constants
+
 import com.yunda.safe.plct.database.AppRepository
 import com.yunda.safe.plct.database.entity.WebUri
 import com.yunda.safe.plct.utility.Preferences
@@ -13,14 +14,14 @@ class WebPageViewModel : ViewModel() {
     val mWebUrisLiveData = appRepository.getWebUris()
 
     private val _uri = MutableLiveData<String>().apply {
-        value = Preferences.getString(WEB_URI, "http://")
+        value = Preferences.getString(Constants.WEB_URI, "http://")
     }
     val uri: LiveData<String> = _uri
 
     fun setUri(newUri: String) {
         if (_uri.value != newUri) {
             _uri.value = newUri
-            Preferences.saveString(WEB_URI, newUri)
+            Preferences.saveString(Constants.WEB_URI, newUri)
         }
     }
 

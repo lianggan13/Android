@@ -2,6 +2,7 @@ package com.yunda.safe.plct.api
 
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -17,7 +18,7 @@ object ApiClient {
         .readTimeout(10, TimeUnit.SECONDS)
         .writeTimeout(10, TimeUnit.SECONDS)
         .build()
-    
+
     private fun getClient(timeoutSeconds: Int = 10): OkHttpClient {
         if (timeoutSeconds == 10) {
             return defaultClient
@@ -29,27 +30,18 @@ object ApiClient {
             .build()
     }
 
-    fun get(url: String, timeoutSeconds: Int = 10): Response? {
+    fun getSync(url: String, timeoutSeconds: Int = 10): Response? {
         val request = Request.Builder()
             .url(url)
             .build()
         return getClient(timeoutSeconds).newCall(request).execute()
     }
 
-    fun post(url: String, body: RequestBody, timeoutSeconds: Int = 10): Response? {
+    fun postSync(url: String, body: RequestBody?, timeoutSeconds: Int = 10): Response? {
         val request = Request.Builder()
             .url(url)
             .addHeader("contentType", "application/json;charset=UTF-8")
-            .post(body)
-            .build()
-        return getClient(timeoutSeconds).newCall(request).execute()
-    }
-
-    fun postSync(url: String, body: RequestBody, timeoutSeconds: Int = 10): Response? {
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("contentType", "application/json;charset=UTF-8")
-            .post(body)
+            .post(body ?: FormBody.Builder().build())
             .build()
         return getClient(timeoutSeconds).newCall(request).execute()
     }
@@ -74,14 +66,14 @@ object ApiClient {
 
     fun postAsync(
         url: String,
-        body: RequestBody,
+        body: RequestBody?,
         timeoutSeconds: Int = 10,
         callback: (Response?, Exception?) -> Unit
     ) {
         val request = Request.Builder()
             .url(url)
             .addHeader("contentType", "application/json;charset=UTF-8")
-            .post(body)
+            .post(body ?: FormBody.Builder().build())
             .build()
         getClient(timeoutSeconds).newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {

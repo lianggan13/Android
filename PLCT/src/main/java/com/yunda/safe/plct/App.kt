@@ -10,7 +10,7 @@ import android.os.Looper
 import android.widget.Toast
 import com.elvishew.xlog.XLog
 import com.jakewharton.threetenabp.AndroidThreeTen
-import com.yunda.safe.plct.common.APK_VERSION
+import com.yunda.safe.plct.common.Constants
 import com.yunda.safe.plct.database.AppRepository
 import com.yunda.safe.plct.handle.PollWorker
 import com.yunda.safe.plct.utility.LogUtil
@@ -53,7 +53,7 @@ class App : Application() {
             XLog.i("APK Signer: ${it.toCharsString()}")
         }
 
-        // Tester.testApi2()
+        // Tester.testApi3()
 
         Thread.setDefaultUncaughtExceptionHandler(GlobalCrashHandler(this@App))
 
@@ -63,8 +63,7 @@ class App : Application() {
 
         PollWorker.start(this@App)
 
-//        PollService.start(this@App)
-        Preferences.saveString(APK_VERSION, versionName)
+        Preferences.saveString(Constants.APK_VERSION, versionName)
     }
 
 
@@ -72,8 +71,6 @@ class App : Application() {
         super.onTerminate()
 
         PollWorker.cancel(this@App)
-
-//        PollService.stop(this@App)
 
         AppRepository.get().close()
     }
