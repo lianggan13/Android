@@ -7,7 +7,7 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">设置</string>
 
-    <string name="menu_home">自我介绍</string>
-    <string name="menu_gallery">项目描述</string>
-    <string name="menu_slideshow">工作记录</string>
+    <string name="menu_skill">工作技能</string>
+    <string name="menu_video">项目视频</string>
+    <string name="menu_photo">工作相册</string>
 </resources>

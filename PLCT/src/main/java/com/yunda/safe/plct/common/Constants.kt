@@ -21,12 +21,22 @@ object Constants {
 
     const val APK_VERSION = "APK_VERSION"
     const val DEFAULT_SOFTWARE_VERSION = "0.0.0.0"
+    const val SERVER_VERSION = ""
 
     const val SERVER_HOST = "SERVER_HOST"
     const val DEFAULT_SERVER_HOST = "http://10.60.0.66:9291"
 
     const val BROWSER_HOMEPAGE = "BROWSER_HOMEPAGE"
-    const val DEFAULT_BROWSER_HOMEPAGE = "http://10.60.0.66:9291/#/terminal/3"
+    const val DEFAULT_BROWSER_HOMEPAGE = "http://10.60.0.66:9291/#/terminal/14"
+
+    var Version: String?
+        get() = Preferences.getString(
+            APK_VERSION,
+            DEFAULT_SOFTWARE_VERSION
+        )
+        set(value) {
+            Preferences.saveString(APK_VERSION, value ?: DEFAULT_SOFTWARE_VERSION)
+        }
 
     var Host: String?
         get() = Preferences.getString(
@@ -37,12 +47,26 @@ object Constants {
             Preferences.saveString(SERVER_HOST, value ?: DEFAULT_SERVER_HOST)
         }
 
-    var Version: String?
+    var HomePage: String?
         get() = Preferences.getString(
-            APK_VERSION,
-            DEFAULT_SOFTWARE_VERSION
+            BROWSER_HOMEPAGE,
+            DEFAULT_BROWSER_HOMEPAGE
         )
         set(value) {
-            Preferences.saveString(APK_VERSION, value ?: DEFAULT_SOFTWARE_VERSION)
+            Preferences.saveString(BROWSER_HOMEPAGE, value ?: DEFAULT_BROWSER_HOMEPAGE)
         }
+
+
+    var ServerVersion: String?
+        get() = Preferences.getString(
+            SERVER_VERSION,
+            ""
+        )
+        set(value) {
+            Preferences.saveString(SERVER_VERSION, value ?: "")
+        }
+
+    init {
+        ServerVersion = ""
+    }
 }

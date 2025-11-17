@@ -8,7 +8,7 @@ import java.util.List;
  * @date: 2020-08-01
  **/
 
-public class NewsEntity implements Serializable {
+public class PhotoEntity implements Serializable {
     /**
      * newsId : 1
      * newsTitle : 《忍者蛙》发售日公布 已上架Steam、支持简中
@@ -24,7 +24,7 @@ public class NewsEntity implements Serializable {
     private String newsTitle;
     private String authorName;
     private String headerUrl;
-    private int commentCount;
+    private String comment;
     private String releaseDate;
     private int type;
     private List<ThumbEntitiesBean> thumbEntities;
@@ -61,12 +61,12 @@ public class NewsEntity implements Serializable {
         this.headerUrl = headerUrl;
     }
 
-    public int getCommentCount() {
-        return commentCount;
+    public String getComment() {
+        return comment;
     }
 
-    public void setCommentCount(int commentCount) {
-        this.commentCount = commentCount;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public String getReleaseDate() {

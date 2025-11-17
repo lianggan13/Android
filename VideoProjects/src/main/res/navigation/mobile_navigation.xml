@@ -3,24 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_gallery">
-    <!--    app:startDestination="@+id/nav_home">-->
+    app:startDestination="@+id/nav_skill">
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.example.zhangliang.videoprojects.ui.myself.GalleryFragment"
-        android:label="@string/menu_home"
-        tools:layout="@layout/fragment_gallery" />
+        android:id="@+id/nav_skill"
+        android:name="com.example.zhangliang.videoprojects.ui.skill.SkillFragment"
+        android:label="@string/menu_skill"
+        tools:layout="@layout/fragment_skill" />
 
     <fragment
-        android:id="@+id/nav_home"
-        android:name="com.example.zhangliang.videoprojects.ui.project.HomeFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/nav_video"
+        android:name="com.example.zhangliang.videoprojects.ui.video.VideoFragment"
+        android:label="@string/menu_video"
+        tools:layout="@layout/fragment_video" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.example.zhangliang.videoprojects.ui.worknote.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/nav_photo"
+        android:name="com.example.zhangliang.videoprojects.ui.photo.PhotoFragment"
+        android:label="@string/menu_photo"
+        tools:layout="@layout/fragment_photo" />
 </navigation>

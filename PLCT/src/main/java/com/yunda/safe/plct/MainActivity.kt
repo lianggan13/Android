@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
-import com.elvishew.xlog.XLog
 import com.yunda.safe.plct.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -29,15 +28,15 @@ class MainActivity : AppCompatActivity() {
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
         }
 
-        binding.root.setOnTouchListener { v, event ->
-            if (event.action == android.view.MotionEvent.ACTION_DOWN) {
-                val x = event.rawX.toInt()
-                val y = event.rawY.toInt()
-                XLog.i("【全局点击监控】点击坐标: ($x, $y)")
-                v.performClick()
-            }
-            false
-        }
+        // binding.root.setOnTouchListener { v, event ->
+        //     if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+        //         val x = event.rawX.toInt()
+        //         val y = event.rawY.toInt()
+        //         XLog.i("【全局点击监控】点击坐标: ($x, $y)")
+        //         v.performClick()
+        //     }
+        //     false
+        // }
     }
 
     override fun onSupportNavigateUp(): Boolean {

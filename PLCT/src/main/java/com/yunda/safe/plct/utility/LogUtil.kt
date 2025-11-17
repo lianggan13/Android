@@ -12,7 +12,6 @@ import com.elvishew.xlog.printer.Printer
 import com.elvishew.xlog.printer.file.FilePrinter
 import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy
 import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy
-import com.elvishew.xlog.printer.file.clean.NeverCleanStrategy
 import com.elvishew.xlog.printer.file.naming.FileNameGenerator
 import com.elvishew.xlog.printer.file.writer.SimpleWriter
 import com.yunda.safe.plct.BuildConfig
@@ -47,7 +46,7 @@ object LogUtil {
             })
             .backupStrategy(NeverBackupStrategy()) // 指定日志文件备份策略，默认为 FileSizeBackupStrategy(1024 * 1024)
 //            .backupStrategy(FileTimeBackupStrategy(24 * 60 * 60 * 1000)) // 每24小时备份一次
-            .cleanStrategy(NeverCleanStrategy())
+//            .cleanStrategy(NeverCleanStrategy())
             .cleanStrategy(FileLastModifiedCleanStrategy(maxTime))
             .flattener(object : Flattener2 {
                 private val dateFormat = SimpleDateFormat("HH:mm:ss.SSS")

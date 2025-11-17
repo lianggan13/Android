@@ -3,13 +3,11 @@ package com.yunda.safe.plct.utility
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
+import androidx.core.net.toUri
 import com.elvishew.xlog.XLog
-import com.yunda.safe.plct.common.Constants
-
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -85,7 +83,7 @@ object BrowserLauncher {
                 Pair(1920, 1080) // 默认分辨率
             }
         } catch (e: Exception) {
-            XLog.w("Failed to get screen size: ${e.message}")
+            XLog.w("Failed to get screen size: ${e.message}", e)
             Pair(1920, 1080) // 默认分辨率
         }
     }
@@ -165,9 +163,6 @@ object BrowserLauncher {
         # echo "→ 点击刷新按钮右下角 (${refreshRightBottomPoint.first}, ${refreshRightBottomPoint.second})..."
         # input tap ${refreshRightBottomPoint.first} ${refreshRightBottomPoint.second}
         # sleep 2
- 
-        # echo "→ 等待页面刷新完成..."
-        # sleep 3
 
         echo "→ 点击全屏按钮中心 (${fullscreenCenterPoint.first}, ${fullscreenCenterPoint.second})..."
         input tap ${fullscreenCenterPoint.first} ${fullscreenCenterPoint.second}
@@ -228,81 +223,34 @@ object BrowserLauncher {
     /**
      * 关闭Edge浏览器
      */
-    private fun closeEdgeBrowser(sync: Boolean = false) {
-        val closeAction = {
-            try {
-                XLog.i("Closing Edge browser...")
-
-                // 方法1：使用 am 命令强制停止 Edge 浏览器
-                val stopProcess = Runtime.getRuntime()
-                    .exec(arrayOf("su", "-c", "am force-stop com.microsoft.emmx"))
-                stopProcess.waitFor()
-
-                XLog.i("Edge browser close commands executed")
-
-                // 等待一段时间确保浏览器完全关闭
-                Thread.sleep(2000)
-
-            } catch (e: Exception) {
-                XLog.w("Failed to close Edge browser: ${e.message}")
-            }
-        }
-
-        if (sync) {
-            // 同步执行
-            closeAction()
-        } else {
-            // 异步执行
-            Thread { closeAction() }.start()
-        }
-    }
-
-    /**
-     * 检查网页HTTP状态
-     */
-    private fun getHttpStatus(url: String): Int {
-        return try {
-            val conn = URL(url).openConnection() as HttpURLConnection
-            conn.requestMethod = "HEAD"
-            conn.connectTimeout = 5000
-            conn.readTimeout = 5000
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Android)")
-            conn.connect()
-
-            val code = conn.responseCode
-            XLog.i("HTTP Status for $url: $code")
-
-            conn.disconnect()
-            code
-
-        } catch (e: java.net.SocketTimeoutException) {
-            XLog.w("Connection timeout for $url: ${e.message}")
-            -1
-        } catch (e: java.net.ConnectException) {
-            XLog.w("Connection failed for $url: ${e.message}")
-            -2
+    fun closeEdgeBrowser() {
+        try {
+            XLog.i("Closing Edge (sync)...")
+            // 使用 su 同步执行 am force-stop
+            val stopProcess = Runtime.getRuntime()
+                .exec(arrayOf("su", "-c", "am force-stop com.microsoft.emmx"))
+            val exit = stopProcess.waitFor()
+            XLog.i("Edge force-stop exitCode=$exit")
+            // 等待确保进程完全退出
+            Thread.sleep(1200)
         } catch (e: Exception) {
-            XLog.w("HTTP check failed for $url: ${e.message}")
-            -3
+            XLog.e("Failed to close Edge: ${e.message}", e)
         }
     }
 
     /**
      * 等待网站可访问并启动浏览器
-     * @param context 上下文
-     * @param url 要访问的网站URL
-     * @param showToast 是否显示Toast提示（后台服务建议设为false）
      */
-    fun waitForWebsiteAndLaunch(context: Context, url: String, showToast: Boolean = true) {
+    fun waitForWebsiteAndLaunch(context: Context, url: String) {
         Thread {
             try {
-                XLog.i("Starting waitForWebsiteAndLaunch for URL: $url")
+                XLog.i("WaitForWebsiteAndLaunch for URL: $url")
 
-                // 首先同步关闭已存在的Edge浏览器
-                closeEdgeBrowser(sync = true)
+                // 首先同步关闭已存在的 Edge 浏览器（保证后续检测/启动顺序）
+                closeEdgeBrowser()
 
                 var attempts = 0
-                val maxAttempts = 12
+                val maxAttempts = 3
                 val checkInterval = 5000L
 
                 while (attempts < maxAttempts) {
@@ -314,31 +262,27 @@ object BrowserLauncher {
                         XLog.i("HTTP Status Code: $httpStatus (Attempt $attempts)")
 
                         if (httpStatus == 200) {
-                            XLog.i("Website is now accessible! Launching Edge browser...")
+                            XLog.i("Website is now accessible! Launching Edge...")
 
                             // 在主线程中启动浏览器
-                            Handler(Looper.getMainLooper()).post {
-                                launchBrowserWithValidUrl(context, url, showToast)
-                            }
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                launchBrowserWithValidUrl(context, url)
+                            }, 500)
                             return@Thread
 
                         } else {
                             XLog.w("Website still not accessible (Status: $httpStatus), waiting ${checkInterval / 1000}s...")
 
                             // 在主线程显示等待状态
-                            if (showToast) {
-                                Handler(Looper.getMainLooper()).post {
-                                    Toast.makeText(
-                                        context,
-                                        "等待网站启动... ($attempts/$maxAttempts)",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+                            Handler(Looper.getMainLooper()).post {
+                                Toast.makeText(
+                                    context,
+                                    "等待网站启动... ($attempts/$maxAttempts)",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
-
                             Thread.sleep(checkInterval)
                         }
-
                     } catch (e: Exception) {
                         XLog.e("Error in attempt $attempts: ${e.message}", e)
                         Thread.sleep(checkInterval)
@@ -347,14 +291,12 @@ object BrowserLauncher {
 
                 // 超过最大尝试次数后的处理
                 XLog.w("Maximum attempts reached, launching browser anyway...")
-                if (showToast) {
-                    Handler(Looper.getMainLooper()).post {
-                        Toast.makeText(
-                            context,
-                            "网站可能尚未完全启动，建议手动点击页面或检查浏览器设置",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        context,
+                        "网站可能尚未完全启动，建议手动点击页面或检查浏览器设置",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
 
             } catch (e: Exception) {
@@ -369,21 +311,18 @@ object BrowserLauncher {
     private fun launchBrowserWithValidUrl(
         context: Context,
         url: String,
-        showToast: Boolean = true
     ) {
         try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             intent.setPackage("com.microsoft.emmx") // Edge 浏览器包名
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
 
             context.startActivity(intent)
+            XLog.i("Successfully launched Edge with URL: $url")
 
-            XLog.i("Successfully launched Edge browser with URL: $url")
-
-            if (showToast) {
-                Toast.makeText(context, "Edge 浏览器已启动", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(context, "Edge 浏览器已启动", Toast.LENGTH_SHORT).show()
 
             // 延迟执行脚本，等待 Edge 启动完成
             Handler(Looper.getMainLooper()).postDelayed({
@@ -391,29 +330,10 @@ object BrowserLauncher {
             }, 3000)
 
         } catch (e: Exception) {
-            XLog.e("Failed to launch Edge browser: ${e.message}", e)
-
-            // 尝试启动默认浏览器
-            try {
-                val fallbackIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                fallbackIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(fallbackIntent)
-
-                if (showToast) {
-                    Toast.makeText(context, "已启动默认浏览器", Toast.LENGTH_SHORT).show()
-                }
-                XLog.i("Fallback: launched default browser")
-            } catch (fallbackException: Exception) {
-                XLog.e(
-                    "Failed to launch any browser: ${fallbackException.message}",
-                    fallbackException
-                )
-                if (showToast) {
-                    Toast.makeText(context, "无法启动浏览器", Toast.LENGTH_SHORT).show()
-                }
-            }
+            XLog.e("Failed to launch Edge: ${e.message}", e)
         }
     }
+
 
     /**
      * 执行全屏脚本
@@ -424,11 +344,15 @@ object BrowserLauncher {
                 XLog.i("Starting to execute fullscreen script")
 
                 // 从 assets 读取脚本内容并处理动态坐标
+                val script = "android_edge_fullscreen.sh"
                 val originalScript =
-                    context.assets.open("android_edge_fullscreen.sh").bufferedReader()
+                    context.assets.open(script).bufferedReader()
                         .use { it.readText() }
                 val scriptContent = processScriptWithDynamicCoordinates(originalScript)
-                val scriptPath = "/sdcard/android_edge_fullscreen.sh"
+
+                // var storage = Environment.getExternalStorageDirectory().path
+                val externalRoot = context.getExternalFilesDir(null)?.absolutePath
+                val scriptPath = "/${externalRoot}/${script}"
 
                 // 使用 cat 命令写入脚本文件
                 val writeProcess = Runtime.getRuntime().exec("su")
@@ -452,11 +376,10 @@ object BrowserLauncher {
                 val exitCode = execProcess.waitFor()
 
                 XLog.i("Script execution completed with exit code: $exitCode")
-                XLog.i("Script output: $output")
+                XLog.i("Script output: \r\n$output")
                 if (error.isNotEmpty()) {
                     XLog.w("Script error: $error")
                 }
-
             } catch (e: Exception) {
                 XLog.e("Failed to execute script: ${e.message}", e)
             }
@@ -464,27 +387,25 @@ object BrowserLauncher {
     }
 
     /**
-     * 启动浏览器（使用配置的主页地址）
+     * 检查网页HTTP状态
      */
-    fun launchBrowserWithHomepage(context: Context, showToast: Boolean = true) {
-        return
-        val browserHomepage =
-            Preferences.getString(Constants.BROWSER_HOMEPAGE, Constants.DEFAULT_BROWSER_HOMEPAGE)
+    fun getHttpStatus(url: String): Int {
+        var code = -1
+        try {
+            val conn = URL(url).openConnection() as HttpURLConnection
+            conn.requestMethod = "HEAD"
+            conn.connectTimeout = 5000
+            conn.readTimeout = 5000
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Android)")
+            conn.connect()
 
-        if (browserHomepage != null && browserHomepage.isNotEmpty() &&
-            (browserHomepage.startsWith("http://") || browserHomepage.startsWith("https://"))
-        ) {
+            code = conn.responseCode
+            XLog.i("HTTP Status for $url: $code")
 
-            XLog.i("Launching browser with homepage: $browserHomepage")
-            waitForWebsiteAndLaunch(context, browserHomepage, showToast)
-
-        } else {
-            XLog.w("Invalid browser homepage format: $browserHomepage")
-            if (showToast) {
-                Handler(Looper.getMainLooper()).post {
-                    Toast.makeText(context, "浏览器主页地址格式不正确", Toast.LENGTH_SHORT).show()
-                }
-            }
+            conn.disconnect()
+        } catch (e: Exception) {
+            XLog.w("HTTP check failed for $url: ${e.message}", e)
         }
+        return code
     }
 }

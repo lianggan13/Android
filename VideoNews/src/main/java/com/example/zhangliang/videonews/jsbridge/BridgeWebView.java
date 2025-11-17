@@ -116,7 +116,7 @@ public class BridgeWebView extends WebView
                         return true;
                     }
 
-                    if (newUrl.startsWith("tel")) {//拨打电话
+                    if (newUrl.startsWith("tel")) {// 拨打电话
                         Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
                         getContext().startActivity(intent);
                         return true;

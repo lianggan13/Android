@@ -121,9 +121,11 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
             @Override
             public void onChildViewDetachedFromWindow(@NonNull View view) {
                 FrameLayout playerContainer = view.findViewById(R.id.player_container);
-                View v = playerContainer.getChildAt(0);
-                if (v != null && v == mVideoView && !mVideoView.isFullScreen()) {
-                    releaseVideoView();
+                if (playerContainer != null) {
+                    View v = playerContainer.getChildAt(0);
+                    if (v != null && v == mVideoView && !mVideoView.isFullScreen()) {
+                        releaseVideoView();
+                    }
                 }
             }
         });
@@ -164,7 +166,7 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
         mVideoView.setOnStateChangeListener(new BaseVideoView.SimpleOnStateChangeListener() {
             @Override
             public void onPlayStateChanged(int playState) {
-                //监听VideoViewManager释放，重置状态
+                // 监听VideoViewManager释放，重置状态
                 if (playState == VideoView.STATE_IDLE) {
                     Utils.removeViewFormParent(mVideoView);
                     mLastPos = mCurPos;
@@ -212,7 +214,7 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
     protected void resume() {
         if (mLastPos == -1)
             return;
-        //恢复上次播放的位置
+        // 恢复上次播放的位置
         startPlay(mLastPos);
     }
 
@@ -235,7 +237,7 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
             releaseVideoView();
         }
         VideoEntity videoEntity = datas.get(position);
-        //边播边存
+        // 边播边存
 //        String proxyUrl = ProxyVideoCacheManager.getProxy(getActivity()).getProxyUrl(videoBean.getUrl());
 //        mVideoView.setUrl(proxyUrl);
 
@@ -253,11 +255,11 @@ public class VideoFragment extends BaseFragment implements OnItemChildClickListe
         if (itemView == null) return;
 
         VideoAdapter.ViewHolder viewHolder = (VideoAdapter.ViewHolder) itemView.getTag();
-        //把列表中预置的PrepareView添加到控制器中，注意isPrivate此处只能为true。
+        // 把列表中预置的PrepareView添加到控制器中，注意isPrivate此处只能为true。
         mController.addControlComponent(viewHolder.mPrepareView, true);
         Utils.removeViewFormParent(mVideoView);
         viewHolder.mPlayerContainer.addView(mVideoView, 0);
-        //播放之前将VideoView添加到VideoViewManager以便在别的页面也能操作它
+        // 播放之前将VideoView添加到VideoViewManager以便在别的页面也能操作它
         getVideoViewManager().add(mVideoView, Tag.LIST);
         mVideoView.start();
         mCurPos = position;

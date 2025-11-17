@@ -33,6 +33,37 @@ public class VideoEntity implements Serializable {
     private String categoryName;
     private VideoSocialEntity videoSocialEntity;
 
+    public VideoEntity
+    () {
+        this.vid = 0;
+        this.vtitle = "";
+        this.author = "";
+        this.coverurl = "";
+        this.headurl = "";
+        this.playurl = "";
+        this.createTime = "";
+        this.updateTime = "";
+        this.categoryId = 0;
+        this.categoryName = "";
+        this.videoSocialEntity = new VideoSocialEntity();
+    }
+
+    public VideoEntity(int vid, String vtitle, String author, String coverurl,
+                       String headurl, String playurl, String createTime,
+                       String updateTime, int categoryId,
+                       VideoSocialEntity videoSocialEntity) {
+        this.vid = vid;
+        this.vtitle = vtitle;
+        this.author = author;
+        this.coverurl = coverurl;
+        this.headurl = headurl;
+        this.playurl = playurl;
+        this.createTime = createTime;
+        this.updateTime = updateTime;
+        this.categoryId = categoryId;
+        this.videoSocialEntity = videoSocialEntity;
+    }
+
     public int getVid() {
         return vid;
     }
@@ -133,6 +164,18 @@ public class VideoEntity implements Serializable {
         private int collectnum;
         private boolean flagLike;
         private boolean flagCollect;
+
+        public VideoSocialEntity() {
+            this(0, 0, 0, false, false);
+        }
+
+        VideoSocialEntity(int commentnum, int likenum, int collectnum, boolean flagLike, boolean flagCollect) {
+            this.commentnum = commentnum;
+            this.likenum = likenum;
+            this.collectnum = collectnum;
+            this.flagLike = flagLike;
+            this.flagCollect = flagCollect;
+        }
 
         public int getCommentnum() {
             return commentnum;

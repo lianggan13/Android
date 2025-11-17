@@ -58,7 +58,7 @@ class SettingFragment : Fragment() {
                     downloadBinder?.startDownload(url)
                 }
                 .setNegativeButton("取消") { _, _ ->
-                    // 取消操作
+
                 }
                 .setCancelable(false)
                 .show()
@@ -84,12 +84,10 @@ class SettingFragment : Fragment() {
             RefreshReceiver.register(requireActivity()) { context, intent ->
                 requireActivity().runOnUiThread {
                     XLog.i("SettingFragment: Refresh signal received")
-                    loadSettings()
+                    launchWebsite()
                     timeoutReload()
                 }
             }
-
-            timeoutReload()
         }
 
         override fun onStart(owner: LifecycleOwner) {
@@ -105,54 +103,6 @@ class SettingFragment : Fragment() {
             requireActivity().unregisterReceiver(versionReceiver)
             RefreshReceiver.unRegister(requireActivity())
             AlarmService.cancelAlarm(requireActivity())
-        }
-
-        private fun timeoutReload() {
-            // 设置定时刷新浏览器网页
-            val url = "${Constants.Host}${API.SYSTEM_RST}"
-            ApiClient.postAsync(url, null, 10) { resp, error ->
-                if (error != null) {
-                    XLog.e("GET failed", error)
-                }
-                if (resp == null || !resp.isSuccessful) {
-                    XLog.e("GetByCode failed: ${resp?.code} ${resp?.message}")
-                }
-
-                try {
-                    val body = resp!!.body?.string().orEmpty()
-                    var timeStr =
-                        org.json.JSONObject(body).optString("value").replace("\"", "").trim()
-                    if (timeStr.isEmpty()) {
-                        XLog.e("value is empty in response: $body")
-                    }
-
-                    val today =
-                        java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                            .format(java.util.Date())
-                    val sdf =
-                        java.text.SimpleDateFormat(
-                            "yyyy-MM-dd HH:mm:ss",
-                            java.util.Locale.getDefault()
-                        )
-
-                    var restartDate = sdf.parse("$today $timeStr")
-
-
-                    if (restartDate == null) {
-                        XLog.w("parse failed: $today $timeStr")
-                    } else {
-                        if (restartDate.time <= System.currentTimeMillis()) {
-                            val cal = java.util.Calendar.getInstance()
-                            cal.time = restartDate
-                            cal.add(java.util.Calendar.DAY_OF_MONTH, 1)
-                            restartDate = cal.time
-                        }
-                        AlarmService.setAlarm(requireContext(), restartDate.time)
-                    }
-                } catch (e: Exception) {
-                    XLog.e("Error scheduling restart: ${e.message}", e)
-                }
-            }
         }
     }
 
@@ -207,6 +157,19 @@ class SettingFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupClickListeners()
+
+        viewModel.IsOnline.observe(viewLifecycleOwner) { isOnline ->
+            if (isOnline == true) {
+                // call waitForWebsiteAndLaunch
+                launchWebsite()
+                // call timeoutReload
+                timeoutReload()
+            } else {
+                // start check online thread
+                viewModel.startCheckOnline(arrayOf(Constants.Host, Constants.HomePage))
+            }
+        }
+
         loadSettings()
     }
 
@@ -222,19 +185,10 @@ class SettingFragment : Fragment() {
         }
     }
 
-    private fun loadSettings() {
-        // 从 SharedPreferences 加载设置
-        val softwareVersion =
-            Preferences.getString(Constants.APK_VERSION, Constants.DEFAULT_SOFTWARE_VERSION)
-        val serverHost = Preferences.getString(Constants.SERVER_HOST, Constants.DEFAULT_SERVER_HOST)
+    private fun launchWebsite() {
+        // val browserHomepage = binding.etBrowserHomepage.text.toString()
         val browserHomepage =
             Preferences.getString(Constants.BROWSER_HOMEPAGE, Constants.DEFAULT_BROWSER_HOMEPAGE)
-
-        // 设置到输入框
-        binding.etSoftwareVersion.setText(softwareVersion)
-        binding.etServerHost.setText(serverHost)
-        binding.etBrowserHomepage.setText(browserHomepage)
-
         // 检查浏览器主页格式，如果格式正确则直接启动浏览器
         if (browserHomepage != null && browserHomepage.isNotEmpty() &&
             (browserHomepage.startsWith("http://") || browserHomepage.startsWith("https://"))
@@ -242,12 +196,76 @@ class SettingFragment : Fragment() {
             XLog.i("Browser homepage loaded from settings: $browserHomepage")
             BrowserLauncher.waitForWebsiteAndLaunch(
                 context = requireContext(),
-                url = browserHomepage,
-                showToast = true
+                url = browserHomepage
             )
         } else {
             XLog.w("Invalid browser homepage format in settings: $browserHomepage")
         }
+    }
+
+    private fun timeoutReload() {
+        val url = "${Constants.Host}${API.SYSTEM_RST}"
+        ApiClient.postAsync(url, null, 10) { resp, error ->
+            if (error != null) {
+                XLog.e("GET failed", error)
+                viewModel.setIsOnline(false)
+                return@postAsync
+            }
+            if (resp == null || !resp.isSuccessful) {
+                XLog.e("GetByCode failed: ${resp?.code} ${resp?.message}")
+                viewModel.setIsOnline(false)
+                return@postAsync
+            }
+
+            try {
+                val body = resp!!.body?.string().orEmpty()
+                var timeStr =
+                    org.json.JSONObject(body).optString("value").replace("\"", "").trim()
+                if (timeStr.isEmpty()) {
+                    XLog.e("value is empty in response: $body")
+                }
+
+                // For Test
+                val randomDelayMillis = kotlin.random.Random.nextLong(10_000L, 120_000L)
+                timeStr = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+                    .format(java.util.Date(System.currentTimeMillis() + randomDelayMillis))
+
+                val today =
+                    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        .format(java.util.Date())
+                val sdf =
+                    java.text.SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm:ss",
+                        java.util.Locale.getDefault()
+                    )
+
+                var restartDate = sdf.parse("$today $timeStr")
+
+                if (restartDate == null) {
+                    XLog.w("parse failed: $today $timeStr")
+                } else {
+                    if (restartDate.time <= System.currentTimeMillis()) {
+                        val cal = java.util.Calendar.getInstance()
+                        cal.time = restartDate
+                        cal.add(java.util.Calendar.DAY_OF_MONTH, 1)
+                        restartDate = cal.time
+                    }
+                    AlarmService.setAlarm(requireContext(), restartDate.time)
+                }
+            } catch (e: Exception) {
+                XLog.e("Error scheduling restart: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun loadSettings() {
+        // 设置到输入框
+        binding.etSoftwareVersion.setText(Constants.Version)
+        binding.etServerHost.setText(Constants.Host)
+        binding.etBrowserHomepage.setText(Constants.HomePage)
+
+        viewModel.stopCheckOnline()
+        viewModel.startCheckOnline(arrayOf(Constants.Host, Constants.HomePage))
     }
 
     private fun saveSettings() {
@@ -292,18 +310,13 @@ class SettingFragment : Fragment() {
         }
 
         // 保存到 SharedPreferences
-        Preferences.saveString(Constants.APK_VERSION, softwareVersion)
-        Preferences.saveString(Constants.SERVER_HOST, serverHost)
-        Preferences.saveString(Constants.BROWSER_HOMEPAGE, browserHomepage)
-
-        // 使用工具类启动浏览器
-        BrowserLauncher.waitForWebsiteAndLaunch(
-            context = requireContext(),
-            url = browserHomepage,
-            showToast = true
-        )
+        Constants.Version = softwareVersion
+        Constants.Host = serverHost
+        Constants.HomePage = browserHomepage
 
         Toast.makeText(requireContext(), "设置已保存", Toast.LENGTH_SHORT).show()
+
+        loadSettings()
     }
 
     private fun resetSettings() {
@@ -328,7 +341,7 @@ class SettingFragment : Fragment() {
         try {
             requireActivity().unbindService(connection)
         } catch (e: Exception) {
-            XLog.w("Failed to unbind service: ${e.message}")
+            XLog.e("Failed to unbind service: ${e.message}")
         }
     }
 }

@@ -25,9 +25,8 @@ android {
 //        }
 
         release {
-//            isMinifyEnabled = false
-            isMinifyEnabled = true // 启用混淆，减少 APK 大小并保护代码。
-            isShrinkResources = true // 移除未使用的资源文件，以减小 APK 大小
+            isMinifyEnabled = false // 启用混淆，减少 APK 大小并保护代码。
+            isShrinkResources = false // 移除未使用的资源文件，以减小 APK 大小
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

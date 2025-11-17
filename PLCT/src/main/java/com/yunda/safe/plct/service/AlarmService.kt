@@ -29,7 +29,6 @@ class AlarmService() {
                     flag
                 )
 
-
             // 设置重复闹钟（每天），使用非精确重复以省电
             // alarmManager.setInexactRepeating(
             //     AlarmManager.RTC_WAKEUP,

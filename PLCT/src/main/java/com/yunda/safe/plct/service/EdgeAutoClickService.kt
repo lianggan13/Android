@@ -21,7 +21,7 @@ class EdgeAutoClickService : AccessibilityService() {
 
         // 只处理 Edge 浏览器窗口
         if (event.packageName == "com.microsoft.emmx") {
-            XLog.i("EdgeAutoClickService: Edge browser event detected, hasClicked: $hasClicked")
+            XLog.i("EdgeAutoClickService: Edge event detected, hasClicked: $hasClicked")
 
             if (!hasClicked) {
                 hasClicked = true

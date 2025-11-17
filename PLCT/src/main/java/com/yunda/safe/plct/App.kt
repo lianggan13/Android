@@ -43,15 +43,15 @@ class App : Application() {
         XLog.i("APK versionName: $versionName, versionCode: $versionCode")
 
         // 获取签名信息
-        val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            info.signingInfo?.apkContentsSigners ?: emptyArray()
-        } else {
-            @Suppress("DEPRECATION")
-            info.signatures
-        }
-        signatures?.forEach {
-            XLog.i("APK Signer: ${it.toCharsString()}")
-        }
+        // val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        //     info.signingInfo?.apkContentsSigners ?: emptyArray()
+        // } else {
+        //     @Suppress("DEPRECATION")
+        //     info.signatures
+        // }
+        // signatures?.forEach {
+        //     XLog.i("APK Signer: ${it.toCharsString()}")
+        // }
 
         // Tester.testApi3()
 
@@ -63,7 +63,7 @@ class App : Application() {
 
         PollWorker.start(this@App)
 
-        Preferences.saveString(Constants.APK_VERSION, versionName)
+        Constants.Version = versionName
     }
 
 

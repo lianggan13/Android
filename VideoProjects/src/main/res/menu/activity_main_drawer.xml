@@ -5,18 +5,18 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@android:drawable/ic_menu_myplaces"
-            android:title="@string/menu_home" />
+            android:id="@+id/nav_skill"
+            android:icon="@mipmap/skill"
+            android:title="@string/menu_skill" />
 
         <item
-            android:id="@+id/nav_home"
-            android:icon="@android:drawable/ic_input_get"
-            android:title="@string/menu_gallery" />
+            android:id="@+id/nav_video"
+            android:icon="@mipmap/video"
+            android:title="@string/menu_video" />
 
         <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@android:drawable/ic_menu_sort_by_size"
-            android:title="@string/menu_slideshow" />
+            android:id="@+id/nav_photo"
+            android:icon="@mipmap/photo"
+            android:title="@string/menu_photo" />
     </group>
 </menu>
