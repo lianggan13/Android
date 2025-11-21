@@ -51,3 +51,5 @@ local.properties
 # Ignore debug and release folders in each app module
 **/debug/
 **/release/
+
+*.mp4
