@@ -226,9 +226,9 @@ class SettingFragment : Fragment() {
                 }
 
                 // For Test
-                val randomDelayMillis = kotlin.random.Random.nextLong(10_000L, 120_000L)
-                timeStr = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
-                    .format(java.util.Date(System.currentTimeMillis() + randomDelayMillis))
+                // val randomDelayMillis = kotlin.random.Random.nextLong(10_000L, 120_000L)
+                // timeStr = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+                //     .format(java.util.Date(System.currentTimeMillis() + randomDelayMillis))
 
                 val today =
                     java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
