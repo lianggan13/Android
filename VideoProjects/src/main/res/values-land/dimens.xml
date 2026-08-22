@@ -1,3 +1,5 @@
 <resources>
-    <dimen name="fab_margin">48dp</dimen>
+    <dimen name="ai_button_gap">4dp</dimen>
+    <dimen name="ai_row_button_gap">4dp</dimen>
+    <dimen name="ai_button_min_height">36dp</dimen>
 </resources>
